@@ -13,11 +13,17 @@ from homeassistant.const import CONF_HOST, CONF_NAME
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.service_info.dhcp import DhcpServiceInfo
+from homeassistant.helpers.service_info.ssdp import SsdpServiceInfo
 from homeassistant.util.timeout import TimeoutManager
 
 from .const import CONF_DEVICE_ID, CONF_MODEL, CONF_STATUS, DOMAIN, PhilipsApi
-from .helpers import extract_model, extract_name
-from .philips import model_to_class
+from .devices import model_to_class
+from .helpers import extract_model, extract_name, scan_for_devices
+
+CONF_METHOD = "method"
+CONF_DEVICE = "device"
+METHOD_SCAN = "scan"
+METHOD_MANUAL = "manual"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,12 +52,46 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._device_id: str = None
         self._wifi_version: Any = None
         self._status: Any = None
+        self._discovered_devices: list[dict] = []
 
     def _get_schema(self, user_input):
         """Provide schema for user input."""
         return vol.Schema(
             {vol.Required(CONF_HOST, default=user_input.get(CONF_HOST, "")): cv.string}
         )
+
+    def _resolve_model(self, model: str) -> str | None:
+        """Resolve model name to supported model key."""
+        model_family = model[:6]
+        model_long = f"{model} {self._wifi_version.split('@')[0]}"
+
+        for candidate in [model, model_long, model_family]:
+            if candidate in model_to_class:
+                _LOGGER.info("Model %s supported", candidate)
+                return candidate
+
+        _LOGGER.warning("Model %s of family %s not supported", model, model_family)
+        return None
+
+    async def _fetch_device_status(self) -> dict | None:
+        """Create CoAP client and fetch device status."""
+        client = None
+        timeout = TimeoutManager()
+
+        try:
+            async with timeout.async_timeout(30):
+                client = await CoAPClient.create(self._host)
+                _LOGGER.debug("got a valid client for host %s", self._host)
+
+            async with timeout.async_timeout(30):
+                _LOGGER.debug("trying to get status")
+                status, _ = await client.get_status()
+                _LOGGER.debug("got status")
+
+            return status
+        finally:
+            if client is not None:
+                await client.shutdown()
 
     async def async_step_dhcp(self, discovery_info: DhcpServiceInfo) -> FlowResult:
         """Handle initial step of auto discovery flow."""
@@ -60,47 +100,94 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._host = discovery_info.ip
         _LOGGER.debug("trying to configure host: %s", self._host)
 
-        # let's try and connect to an AirPurifier
         try:
-            client = None
-            timeout = TimeoutManager()
-
-            # try for 30s to get a valid client
-            async with timeout.async_timeout(30):
-                client = await CoAPClient.create(self._host)
-                _LOGGER.debug("got a valid client for host %s", self._host)
-
-            # we give it 30s to get a status, otherwise we abort
-            async with timeout.async_timeout(30):
-                _LOGGER.debug("trying to get status")
-                status, _ = await client.get_status()
-                _LOGGER.debug("got status")
-
-            if client is not None:
-                await client.shutdown()
-
-            # get the status out of the queue
+            status = await self._fetch_device_status()
             _LOGGER.debug("status for host %s is: %s", self._host, status)
-
         except TimeoutError:
             _LOGGER.warning(
-                r"Timeout, host %s looks like a Philips AirPurifier but doesn't answer, aborting",
+                "Timeout, host %s looks like a Philips AirPurifier but doesn't answer",
                 self._host,
             )
             return self.async_abort(reason="model_unsupported")
-
         except Exception as ex:
-            _LOGGER.warning(r"Failed to connect: %s", ex)
+            _LOGGER.warning("Failed to connect: %s", ex)
             raise exceptions.ConfigEntryNotReady from ex
 
-        # autodetect model
+        self._extract_device_info(status)
+
+        resolved_model = self._resolve_model(self._model)
+        if resolved_model is None:
+            return self.async_abort(reason="model_unsupported")
+        self._model = resolved_model
+
+        await self.async_set_unique_id(self._device_id)
+        self._abort_if_unique_id_configured(updates={CONF_HOST: self._host})
+
+        self.context.update(
+            {"title_placeholders": {CONF_NAME: f"{self._model} {self._name}"}}
+        )
+
+        _LOGGER.debug("waiting for async_step_confirm")
+        return await self.async_step_confirm()
+
+    async def async_step_ssdp(self, discovery_info: SsdpServiceInfo) -> FlowResult:
+        """Handle initial step of SSDP discovery flow."""
+        _LOGGER.debug("async_step_ssdp: called, found: %s", discovery_info)
+
+        self._host = discovery_info.ssdp_headers.get("_host", "").split(":")[0]
+        if not self._host:
+            # Try to extract from SSDP location URL
+            location = discovery_info.ssdp_location
+            if location:
+                from urllib.parse import urlparse
+
+                parsed = urlparse(location)
+                self._host = parsed.hostname
+
+        if not self._host:
+            _LOGGER.warning("Could not extract host from SSDP discovery info")
+            return self.async_abort(reason="no_host")
+
+        _LOGGER.debug("trying to configure host: %s", self._host)
+
+        try:
+            status = await self._fetch_device_status()
+            _LOGGER.debug("status for host %s is: %s", self._host, status)
+        except TimeoutError:
+            _LOGGER.warning(
+                "Timeout, host %s looks like a Philips AirPurifier but doesn't answer",
+                self._host,
+            )
+            return self.async_abort(reason="model_unsupported")
+        except Exception as ex:
+            _LOGGER.warning("Failed to connect: %s", ex)
+            raise exceptions.ConfigEntryNotReady from ex
+
+        self._extract_device_info(status)
+
+        resolved_model = self._resolve_model(self._model)
+        if resolved_model is None:
+            return self.async_abort(reason="model_unsupported")
+        self._model = resolved_model
+
+        await self.async_set_unique_id(self._device_id)
+        self._abort_if_unique_id_configured(updates={CONF_HOST: self._host})
+
+        self.context.update(
+            {"title_placeholders": {CONF_NAME: f"{self._model} {self._name}"}}
+        )
+
+        _LOGGER.debug("waiting for async_step_confirm")
+        return await self.async_step_confirm()
+
+    def _extract_device_info(self, status: dict) -> None:
+        """Extract device information from status."""
         self._model = extract_model(status)
-
-        # autodetect Wifi version
         self._wifi_version = status.get(PhilipsApi.WIFI_VERSION)
-
         self._name = extract_name(status)
         self._device_id = status[PhilipsApi.DEVICE_ID]
+        self._status = status
+
         _LOGGER.debug(
             "Detected host %s as model %s with name: %s and firmware %s",
             self._host,
@@ -108,50 +195,6 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._name,
             self._wifi_version,
         )
-        self._status = status
-
-        # check if model is supported
-        model_long = self._model + " " + self._wifi_version.split("@")[0]
-        model = self._model
-        model_family = self._model[:6]
-
-        if model in model_to_class:
-            _LOGGER.info("Model %s supported", model)
-            self._model = model
-        elif model_long in model_to_class:
-            _LOGGER.info("Model %s supported", model_long)
-            self._model = model_long
-        elif model_family in model_to_class:
-            _LOGGER.info("Model family %s supported", model_family)
-            self._model = model_family
-        else:
-            _LOGGER.warning(
-                "Model %s of family %s not supported in DHCP discovery",
-                model,
-                model_family,
-            )
-            return self.async_abort(reason="model_unsupported")
-
-        # use the device ID as unique_id
-        unique_id = self._device_id
-        _LOGGER.debug("async_step_user: unique_id=%s", unique_id)
-
-        # set the unique id for the entry, abort if it already exists
-        await self.async_set_unique_id(unique_id)
-        self._abort_if_unique_id_configured(updates={CONF_HOST: self._host})
-
-        # store the data for the next step to get confirmation
-        self.context.update(
-            {
-                "title_placeholders": {
-                    CONF_NAME: self._model + " " + self._name,
-                }
-            }
-        )
-
-        # show the confirmation form to the user
-        _LOGGER.debug("waiting for async_step_confirm")
-        return await self.async_step_confirm()
 
     async def async_step_confirm(
         self, user_input: dict[str, str] | None = None
@@ -188,104 +231,131 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, str] | None = None
     ) -> FlowResult:
-        """Handle initial step of user config flow."""
+        """Handle initial step - show menu to choose scan or manual entry."""
+        return self.async_show_menu(
+            step_id="user",
+            menu_options=["scan", "manual"],
+        )
 
+    async def async_step_scan(
+        self, user_input: dict[str, str] | None = None
+    ) -> FlowResult:
+        """Scan the network for Philips devices."""
+        if not self._discovered_devices:
+            return self.async_show_progress(
+                step_id="scan",
+                progress_action="scanning",
+            )
+        return await self.async_step_scan_done()
+
+    async def async_step_scanning(
+        self, user_input: dict[str, str] | None = None
+    ) -> FlowResult:
+        """Handle the background scan progress."""
+        _LOGGER.info("Starting network scan for Philips devices...")
+        self._discovered_devices = await scan_for_devices(timeout=45.0)
+        return self.async_show_progress_done(next_step_id="scan_done")
+
+    async def async_step_scan_done(
+        self, user_input: dict[str, str] | None = None
+    ) -> FlowResult:
+        """Handle scan completion."""
+        if not self._discovered_devices:
+            _LOGGER.warning("No devices found during network scan")
+            return self.async_abort(reason="no_devices_found")
+
+        return await self.async_step_pick_device()
+
+    async def async_step_pick_device(
+        self, user_input: dict[str, str] | None = None
+    ) -> FlowResult:
+        """Let user pick a discovered device."""
+        if user_input is not None:
+            selected_ip = user_input.get(CONF_DEVICE)
+            for device in self._discovered_devices:
+                if device["ip"] == selected_ip:
+                    self._host = device["ip"]
+                    self._status = device["status"]
+                    self._extract_device_info(self._status)
+
+                    resolved_model = self._resolve_model(self._model)
+                    if resolved_model is None:
+                        return self.async_abort(reason="model_unsupported")
+
+                    config_entry_data = {
+                        CONF_MODEL: resolved_model,
+                        CONF_NAME: self._name,
+                        CONF_DEVICE_ID: self._device_id,
+                        CONF_HOST: self._host,
+                        CONF_STATUS: self._status,
+                    }
+
+                    await self.async_set_unique_id(self._device_id)
+                    self._abort_if_unique_id_configured(updates={CONF_HOST: self._host})
+
+                    return self.async_create_entry(
+                        title=f"{resolved_model} {self._name}",
+                        data=config_entry_data,
+                    )
+
+            return self.async_abort(reason="device_not_found")
+
+        # Build device options
+        device_options = {
+            device["ip"]: f"{device['model']} - {device['name']} ({device['ip']})"
+            for device in self._discovered_devices
+        }
+
+        schema = vol.Schema({vol.Required(CONF_DEVICE): vol.In(device_options)})
+        return self.async_show_form(
+            step_id="pick_device",
+            data_schema=schema,
+            description_placeholders={"count": str(len(self._discovered_devices))},
+        )
+
+    async def async_step_manual(
+        self, user_input: dict[str, str] | None = None
+    ) -> FlowResult:
+        """Handle manual IP entry."""
         errors = {}
-        config_entry_data = user_input
 
-        # user input was provided, so check and save it
-        if config_entry_data is not None:
+        if user_input is not None:
             try:
-                # first some sanitycheck on the host input
-                if not host_valid(config_entry_data[CONF_HOST]):
+                if not host_valid(user_input[CONF_HOST]):
                     raise InvalidHost  # noqa: TRY301
-                self._host = config_entry_data[CONF_HOST]
+
+                self._host = user_input[CONF_HOST]
                 _LOGGER.debug("trying to configure host: %s", self._host)
 
-                # let's try and connect to an AirPurifier
                 try:
-                    client = None
-                    timeout = TimeoutManager()
-
-                    # try for 30s to get a valid client
-                    async with timeout.async_timeout(30):
-                        client = await CoAPClient.create(self._host)
-                        _LOGGER.debug("got a valid client")
-
-                    # we give it 30s to get a status, otherwise we abort
-                    async with timeout.async_timeout(30):
-                        _LOGGER.debug("trying to get status")
-                        status, _ = await client.get_status()
-                        _LOGGER.debug("got status")
-
-                    if client is not None:
-                        await client.shutdown()
-
+                    status = await self._fetch_device_status()
                 except TimeoutError:
-                    _LOGGER.warning(
-                        r"Timeout, host %s doesn't answer, aborting", self._host
-                    )
+                    _LOGGER.warning("Timeout, host %s doesn't answer", self._host)
                     return self.async_abort(reason="timeout")
-
                 except Exception as ex:
-                    _LOGGER.warning(r"Failed to connect: %s", ex)
+                    _LOGGER.warning("Failed to connect: %s", ex)
                     raise exceptions.ConfigEntryNotReady from ex
 
-                # autodetect model
-                self._model = extract_model(status)
+                self._extract_device_info(status)
 
-                # autodetect Wifi version
-                self._wifi_version = status.get(PhilipsApi.WIFI_VERSION)
-
-                self._name = extract_name(status)
-                self._device_id = status[PhilipsApi.DEVICE_ID]
-                config_entry_data[CONF_MODEL] = self._model
-                config_entry_data[CONF_NAME] = self._name
-                config_entry_data[CONF_DEVICE_ID] = self._device_id
-                config_entry_data[CONF_HOST] = self._host
-                config_entry_data[CONF_STATUS] = status
-
-                _LOGGER.debug(
-                    "Detected host %s as model %s with name: %s and firmware: %s",
-                    self._host,
-                    self._model,
-                    self._name,
-                    self._wifi_version,
-                )
-
-                # check if model is supported
-                model_long = self._model + " " + self._wifi_version.split("@")[0]
-                model = self._model
-                model_family = self._model[:6]
-
-                if model in model_to_class:
-                    _LOGGER.info("Model %s supported", model)
-                    config_entry_data[CONF_MODEL] = model
-                elif model_long in model_to_class:
-                    _LOGGER.info("Model %s supported", model_long)
-                    config_entry_data[CONF_MODEL] = model_long
-                elif model_family in model_to_class:
-                    _LOGGER.info("Model family %s supported", model_family)
-                    config_entry_data[CONF_MODEL] = model_family
-                else:
-                    _LOGGER.warning(
-                        "Model %s of family %s not supported in user discovery",
-                        model,
-                        model_family,
-                    )
+                resolved_model = self._resolve_model(self._model)
+                if resolved_model is None:
                     return self.async_abort(reason="model_unsupported")
 
-                # use the device ID as unique_id
-                config_entry_unique_id = self._device_id
-                config_entry_name = f"{self._model} {self._name}"
+                config_entry_data = {
+                    CONF_MODEL: resolved_model,
+                    CONF_NAME: self._name,
+                    CONF_DEVICE_ID: self._device_id,
+                    CONF_HOST: self._host,
+                    CONF_STATUS: status,
+                }
 
-                # set the unique id for the entry, abort if it already exists
-                await self.async_set_unique_id(config_entry_unique_id)
+                await self.async_set_unique_id(self._device_id)
                 self._abort_if_unique_id_configured(updates={CONF_HOST: self._host})
 
-                # compile a name and return the config entry
                 return self.async_create_entry(
-                    title=config_entry_name, data=config_entry_data
+                    title=f"{resolved_model} {self._name}",
+                    data=config_entry_data,
                 )
 
             except InvalidHost:
@@ -293,14 +363,8 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except exceptions.ConfigEntryNotReady:
                 errors[CONF_HOST] = "connect"
 
-        if config_entry_data is None:
-            config_entry_data = {}
-
-        # no user_input so far
-        schema = self._get_schema(config_entry_data)
-
-        # show the form to the user
-        return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
+        schema = self._get_schema(user_input or {})
+        return self.async_show_form(step_id="manual", data_schema=schema, errors=errors)
 
 
 class InvalidHost(exceptions.HomeAssistantError):

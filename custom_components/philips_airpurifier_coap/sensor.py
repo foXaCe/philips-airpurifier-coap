@@ -30,7 +30,7 @@ from .const import (
     FanAttributes,
     PhilipsApi,
 )
-from .philips import PhilipsEntity, model_to_class
+from .devices import PhilipsEntity, model_to_class
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -14,7 +14,7 @@ from homeassistant.helpers.entity import Entity
 
 from .config_entry_data import ConfigEntryData
 from .const import DOMAIN, NUMBER_TYPES, FanAttributes
-from .philips import PhilipsEntity, model_to_class
+from .devices import PhilipsEntity, model_to_class
 
 _LOGGER = logging.getLogger(__name__)
 

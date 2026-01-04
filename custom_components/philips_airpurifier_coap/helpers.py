@@ -1,6 +1,14 @@
 """Helper functions for Philips air purifier status."""
 
+from __future__ import annotations
+
+import asyncio
+import logging
+import socket
+
 from .const import PhilipsApi
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def extract_name(status: dict) -> str:
@@ -23,3 +31,148 @@ def extract_model(status: dict) -> str:
         if model:
             return model[:9]
     return ""
+
+
+def get_local_ip() -> str | None:
+    """Get the local IP address of this machine."""
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.connect(("8.8.8.8", 80))
+        local_ip = sock.getsockname()[0]
+        sock.close()
+        return local_ip
+    except Exception:
+        return None
+
+
+def get_active_ips_from_arp() -> list[str]:
+    """Get list of active IPs from ARP table."""
+    active_ips = []
+    try:
+        with open("/proc/net/arp") as f:
+            lines = f.readlines()[1:]  # Skip header
+            for line in lines:
+                parts = line.split()
+                if len(parts) >= 4 and parts[2] == "0x2":  # Valid entry
+                    active_ips.append(parts[0])
+    except Exception as ex:
+        _LOGGER.debug("Could not read ARP table: %s", ex)
+    return active_ips
+
+
+async def ping_sweep(network_prefix: str) -> set[str]:
+    """Quick ping sweep to find active hosts using multiple methods."""
+    _LOGGER.debug("Ping sweep on %s.0/24 to discover active hosts", network_prefix)
+    active_ips = set()
+
+    async def check_port(ip: str, port: int) -> str | None:
+        """Try to connect to a port to check if host is alive."""
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.setblocking(False)
+            sock.settimeout(0.1)
+            sock.sendto(b"\x00", (ip, port))
+            sock.close()
+            return ip
+        except Exception:
+            return None
+
+    # Send UDP packets to common ports to trigger ARP
+    tasks = []
+    for i in range(1, 255):
+        ip = f"{network_prefix}.{i}"
+        tasks.append(check_port(ip, 5683))  # CoAP
+        tasks.append(check_port(ip, 80))    # HTTP
+
+    await asyncio.gather(*tasks)
+    await asyncio.sleep(1)  # Wait for ARP responses
+
+    return active_ips
+
+
+async def _check_single_ip(
+    ip: str,
+    semaphore: asyncio.Semaphore,
+    timeout: float,
+) -> dict | None:
+    """Check a single IP for a Philips device."""
+    from aioairctrl import CoAPClient
+
+    async with semaphore:
+        client = None
+        try:
+            client = await asyncio.wait_for(CoAPClient.create(ip), timeout=15)
+            status, _ = await asyncio.wait_for(client.get_status(), timeout=timeout)
+            if status:
+                model = extract_model(status)
+                name = extract_name(status)
+                _LOGGER.info("Found Philips device at %s: %s %s", ip, model, name)
+                return {"ip": ip, "model": model, "name": name, "status": status}
+        except TimeoutError:
+            _LOGGER.debug("Timeout checking %s", ip)
+        except asyncio.CancelledError:
+            _LOGGER.debug("Cancelled checking %s", ip)
+        except Exception:
+            pass  # Silently ignore non-Philips devices
+        finally:
+            if client:
+                try:
+                    await asyncio.wait_for(client.shutdown(), timeout=2)
+                except Exception:
+                    pass  # Ignore shutdown errors
+        return None
+
+
+def _get_ips_to_scan(network_prefix: str) -> list[str]:
+    """Get list of IPs to scan from ARP and common range."""
+    arp_ips = get_active_ips_from_arp()
+    arp_ips = [ip for ip in arp_ips if ip.startswith(network_prefix + ".")]
+    common_ips = {f"{network_prefix}.{i}" for i in range(1, 101)}
+    active_ips = list(set(arp_ips) | common_ips)
+    active_ips.sort(key=lambda x: int(x.split(".")[-1]))
+    _LOGGER.info(
+        "Scanning %d IPs on %s.0/24 (%d from ARP, %d common range)...",
+        len(active_ips),
+        network_prefix,
+        len(arp_ips),
+        len(common_ips),
+    )
+    return active_ips
+
+
+async def scan_for_devices(timeout: float = 45.0) -> list[dict]:
+    """Scan the local network for Philips air purifiers.
+
+    Optimized: First discovers active IPs via ARP, then only checks those.
+    Returns a list of dicts with 'ip', 'model', 'name' keys.
+    """
+    import logging
+
+    # Suppress noisy CoAP logs during scan
+    logging.getLogger("coap").setLevel(logging.ERROR)
+    logging.getLogger("aioairctrl").setLevel(logging.WARNING)
+
+    local_ip = get_local_ip()
+    if not local_ip:
+        _LOGGER.warning("Could not determine local IP address")
+        return []
+
+    network_prefix = ".".join(local_ip.split(".")[:3])
+
+    # Populate ARP table and get IPs to scan
+    await ping_sweep(network_prefix)
+    active_ips = _get_ips_to_scan(network_prefix)
+
+    # Scan all IPs concurrently
+    semaphore = asyncio.Semaphore(10)
+    tasks = [_check_single_ip(ip, semaphore, timeout) for ip in active_ips]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    found_devices = [r for r in results if isinstance(r, dict)]
+
+    # Restore log levels
+    logging.getLogger("coap").setLevel(logging.WARNING)
+    logging.getLogger("aioairctrl").setLevel(logging.INFO)
+
+    _LOGGER.info("Network scan complete. Found %d Philips device(s)", len(found_devices))
+    return found_devices

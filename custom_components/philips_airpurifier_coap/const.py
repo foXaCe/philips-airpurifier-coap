@@ -241,10 +241,14 @@ class FanFunction(StrEnum):
     CIRCULATION = "circulation"
 
 
+FILTER_ALERT_THRESHOLD = 10  # Percentage below which filter needs attention
+
+
 class FanAttributes(StrEnum):
     """The attributes of a fan."""
 
     ACTUAL_FAN_SPEED = "actual_fan_speed"
+    FILTER_NEEDS_ATTENTION = "filter_needs_attention"
     AIR_QUALITY_INDEX = "air_quality_index"
     AIR_QUALITY = "air_quality"
     CHILD_LOCK = "child_lock"

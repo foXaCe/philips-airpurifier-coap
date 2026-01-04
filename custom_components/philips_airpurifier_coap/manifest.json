@@ -3,7 +3,7 @@
   "name": "Philips AirPurifier (with CoAP)",
   "codeowners": ["@kongo09"],
   "config_flow": true,
-  "dependencies": ["frontend", "http"],
+  "dependencies": ["frontend", "http", "ssdp"],
   "dhcp": [
     {
       "macaddress": "B0F893*"
@@ -22,6 +22,11 @@
     },
     {
       "registered_devices": true
+    }
+  ],
+  "ssdp": [
+    {
+      "st": "urn:philips-com:device:DiProduct:1"
     }
   ],
   "documentation": "https://github.com/kongo09/philips-airpurifier-coap",

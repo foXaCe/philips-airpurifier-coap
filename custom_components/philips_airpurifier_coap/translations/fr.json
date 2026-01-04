@@ -4,11 +4,29 @@
     "abort": {
       "already_configured": "Appareil déjà configuré",
       "model_unsupported": "Modèle non supporté",
-      "timeout": "Délai dépassé, impossible de se connecter à l'appareil"
+      "timeout": "Délai dépassé, impossible de se connecter à l'appareil",
+      "no_host": "Impossible de déterminer l'adresse IP de l'appareil",
+      "no_devices_found": "Aucun appareil Philips trouvé sur le réseau",
+      "device_not_found": "Appareil sélectionné introuvable"
     },
     "step": {
       "user": {
         "title": "Nouveau Philips AirPurifier",
+        "description": "Choisissez comment ajouter votre appareil",
+        "menu_options": {
+          "scan": "Scanner le réseau",
+          "manual": "Saisir l'IP manuellement"
+        }
+      },
+      "pick_device": {
+        "title": "Sélectionner un appareil",
+        "description": "{count} appareil(s) trouvé(s) sur le réseau",
+        "data": {
+          "device": "Appareil"
+        }
+      },
+      "manual": {
+        "title": "Configuration manuelle",
         "data": {
           "host": "Nom d'hôte ou adresse IP de l'appareil"
         }
@@ -16,6 +34,9 @@
       "confirm": {
         "description": "Voulez-vous configurer {model} {name} ?"
       }
+    },
+    "progress": {
+      "scanning": "Recherche des appareils Philips sur le réseau..."
     },
     "error": {
       "host": "L'adresse de l'appareil est requise",
@@ -144,6 +165,13 @@
         "state": {
           "on": "Activée",
           "off": "Désactivée"
+        }
+      },
+      "filter_needs_attention": {
+        "name": "Filtre à remplacer",
+        "state": {
+          "on": "Attention requise",
+          "off": "OK"
         }
       }
     },

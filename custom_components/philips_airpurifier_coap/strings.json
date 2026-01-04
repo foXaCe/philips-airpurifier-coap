@@ -4,11 +4,29 @@
     "abort": {
       "already_configured": "Device already configured",
       "model_unsupported": "Model unsupported",
-      "timeout": "Timeout, cannot connect to device"
+      "timeout": "Timeout, cannot connect to device",
+      "no_host": "Could not determine device IP address",
+      "no_devices_found": "No Philips devices found on the network",
+      "device_not_found": "Selected device not found"
     },
     "step": {
       "user": {
         "title": "New Philips AirPurifier",
+        "description": "Choose how to add your device",
+        "menu_options": {
+          "scan": "Scan network",
+          "manual": "Enter IP manually"
+        }
+      },
+      "pick_device": {
+        "title": "Select device",
+        "description": "Found {count} device(s) on the network",
+        "data": {
+          "device": "Device"
+        }
+      },
+      "manual": {
+        "title": "Manual configuration",
         "data": {
           "host": "Device hostname or IP address"
         }
@@ -16,6 +34,9 @@
       "confirm": {
         "description": "Do you want to setup {model} {name}?"
       }
+    },
+    "progress": {
+      "scanning": "Scanning network for Philips devices..."
     },
     "error": {
       "host": "Device address is required",
@@ -144,6 +165,13 @@
         "state": {
           "on": "On",
           "off": "Off"
+        }
+      },
+      "filter_needs_attention": {
+        "name": "Filter needs attention",
+        "state": {
+          "on": "Attention needed",
+          "off": "OK"
         }
       }
     },

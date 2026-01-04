@@ -27,7 +27,7 @@ from .const import (
     FanAttributes,
     PresetMode,
 )
-from .philips import PhilipsGenericControlBase, model_to_class
+from .devices import PhilipsGenericControlBase, model_to_class
 
 _LOGGER = logging.getLogger(__name__)
 
