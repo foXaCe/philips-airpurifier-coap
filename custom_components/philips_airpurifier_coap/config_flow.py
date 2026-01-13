@@ -253,7 +253,17 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle the background scan progress."""
         _LOGGER.info("Starting network scan for Philips devices...")
-        self._discovered_devices = await scan_for_devices(timeout=45.0)
+        all_devices = await scan_for_devices()
+
+        # Filter out already configured devices
+        configured_ids = {
+            entry.unique_id for entry in self._async_current_entries()
+        }
+        self._discovered_devices = [
+            d for d in all_devices
+            if d.get("status", {}).get("DeviceId") not in configured_ids
+        ]
+
         return self.async_show_progress_done(next_step_id="scan_done")
 
     async def async_step_scan_done(
