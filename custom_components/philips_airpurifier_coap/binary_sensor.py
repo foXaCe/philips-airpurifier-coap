@@ -197,11 +197,12 @@ class PhilipsFilterAlertSensor(PhilipsEntity, BinarySensorEntity):
                     filter_name = filter_desc.get(FanAttributes.LABEL, filter_key)
                     low_filters_data = self._get_low_filters()
 
+                    device_info = self.config_entry_data.device_information
                     self.hass.bus.fire(
                         EVENT_FILTER_ALERT,
                         {
-                            "device_id": self._device_id,
-                            "device_name": self._name,
+                            "device_id": device_info.device_id,
+                            "device_name": device_info.name,
                             "filter_key": filter_key,
                             "filter_name": filter_name,
                             "percentage": low_filters_data.get(filter_key),

@@ -232,7 +232,7 @@
       }
     },
     "number": {
-      "oscillaton": {
+      "oscillation": {
         "default": "pap:oscillate"
       },
       "target_temp": {
