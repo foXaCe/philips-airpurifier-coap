@@ -111,7 +111,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="model_unsupported")
         except Exception as ex:
             _LOGGER.warning("Failed to connect: %s", ex)
-            raise exceptions.ConfigEntryNotReady from ex
+            return self.async_abort(reason="timeout")
 
         self._extract_device_info(status)
 
@@ -123,9 +123,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(self._device_id)
         self._abort_if_unique_id_configured(updates={CONF_HOST: self._host})
 
-        self.context.update(
-            {"title_placeholders": {CONF_NAME: f"{self._model} {self._name}"}}
-        )
+        self.context.update({"title_placeholders": {CONF_NAME: f"{self._model} {self._name}"}})
 
         _LOGGER.debug("waiting for async_step_confirm")
         return await self.async_step_confirm()
@@ -161,7 +159,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="model_unsupported")
         except Exception as ex:
             _LOGGER.warning("Failed to connect: %s", ex)
-            raise exceptions.ConfigEntryNotReady from ex
+            return self.async_abort(reason="timeout")
 
         self._extract_device_info(status)
 
@@ -173,9 +171,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(self._device_id)
         self._abort_if_unique_id_configured(updates={CONF_HOST: self._host})
 
-        self.context.update(
-            {"title_placeholders": {CONF_NAME: f"{self._model} {self._name}"}}
-        )
+        self.context.update({"title_placeholders": {CONF_NAME: f"{self._model} {self._name}"}})
 
         _LOGGER.debug("waiting for async_step_confirm")
         return await self.async_step_confirm()
@@ -196,9 +192,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._wifi_version,
         )
 
-    async def async_step_confirm(
-        self, user_input: dict[str, str] | None = None
-    ) -> FlowResult:
+    async def async_step_confirm(self, user_input: dict[str, str] | None = None) -> FlowResult:
         """Confirm the dhcp discovered data."""
         _LOGGER.debug("async_step_confirm called with user_input: %s", user_input)
 
@@ -228,18 +222,14 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders={"model": self._model, "name": self._name},
         )
 
-    async def async_step_user(
-        self, user_input: dict[str, str] | None = None
-    ) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, str] | None = None) -> FlowResult:
         """Handle initial step - show menu to choose scan or manual entry."""
         return self.async_show_menu(
             step_id="user",
             menu_options=["scan", "manual"],
         )
 
-    async def async_step_scan(
-        self, user_input: dict[str, str] | None = None
-    ) -> FlowResult:
+    async def async_step_scan(self, user_input: dict[str, str] | None = None) -> FlowResult:
         """Scan the network for Philips devices."""
         if not self._discovered_devices:
             return self.async_show_progress(
@@ -248,27 +238,20 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
         return await self.async_step_scan_done()
 
-    async def async_step_scanning(
-        self, user_input: dict[str, str] | None = None
-    ) -> FlowResult:
+    async def async_step_scanning(self, user_input: dict[str, str] | None = None) -> FlowResult:
         """Handle the background scan progress."""
         _LOGGER.info("Starting network scan for Philips devices...")
         all_devices = await scan_for_devices()
 
         # Filter out already configured devices
-        configured_ids = {
-            entry.unique_id for entry in self._async_current_entries()
-        }
+        configured_ids = {entry.unique_id for entry in self._async_current_entries()}
         self._discovered_devices = [
-            d for d in all_devices
-            if d.get("status", {}).get("DeviceId") not in configured_ids
+            d for d in all_devices if d.get("status", {}).get("DeviceId") not in configured_ids
         ]
 
         return self.async_show_progress_done(next_step_id="scan_done")
 
-    async def async_step_scan_done(
-        self, user_input: dict[str, str] | None = None
-    ) -> FlowResult:
+    async def async_step_scan_done(self, user_input: dict[str, str] | None = None) -> FlowResult:
         """Handle scan completion."""
         if not self._discovered_devices:
             _LOGGER.warning("No devices found during network scan")
@@ -276,9 +259,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return await self.async_step_pick_device()
 
-    async def async_step_pick_device(
-        self, user_input: dict[str, str] | None = None
-    ) -> FlowResult:
+    async def async_step_pick_device(self, user_input: dict[str, str] | None = None) -> FlowResult:
         """Let user pick a discovered device."""
         if user_input is not None:
             selected_ip = user_input.get(CONF_DEVICE)
@@ -323,9 +304,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders={"count": str(len(self._discovered_devices))},
         )
 
-    async def async_step_manual(
-        self, user_input: dict[str, str] | None = None
-    ) -> FlowResult:
+    async def async_step_manual(self, user_input: dict[str, str] | None = None) -> FlowResult:
         """Handle manual IP entry."""
         errors = {}
 
@@ -344,7 +323,8 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     return self.async_abort(reason="timeout")
                 except Exception as ex:
                     _LOGGER.warning("Failed to connect: %s", ex)
-                    raise exceptions.ConfigEntryNotReady from ex
+                    errors[CONF_HOST] = "connect"
+                    raise InvalidHost from ex
 
                 self._extract_device_info(status)
 
@@ -369,9 +349,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
 
             except InvalidHost:
-                errors[CONF_HOST] = "host"
-            except exceptions.ConfigEntryNotReady:
-                errors[CONF_HOST] = "connect"
+                errors[CONF_HOST] = errors.get(CONF_HOST, "host")
 
         schema = self._get_schema(user_input or {})
         return self.async_show_form(step_id="manual", data_schema=schema, errors=errors)
