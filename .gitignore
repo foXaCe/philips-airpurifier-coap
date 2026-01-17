@@ -1,41 +1,52 @@
 # macOS
 .DS_Store
 
-# Project specific
-logging.conf
-Philips-Airpurifier.code-workspace
-
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+.Python
 .venv/
 venv/
+ENV/
+env/
 .env
 .env.local
 .env.*.local
 
-# IDE
+# IDE / Editors
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
+*.code-workspace
 
-# Testing
+# Tests
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
 
-# Build
+# Distribution / Build
 dist/
 build/
 *.egg-info/
+*.egg
 
 # Ruff
 .ruff_cache/
+
+# Logs
+*.log
+logging.conf
+
+# Home Assistant specific
+config/
+.HA_VERSION
+home-assistant.log
+home-assistant_v2.db
 
 # Claude Code
 CLAUDE.md
