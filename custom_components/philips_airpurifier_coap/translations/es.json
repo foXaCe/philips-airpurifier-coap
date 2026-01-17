@@ -1,0 +1,305 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Dispositivo ya configurado",
+      "device_not_found": "Dispositivo seleccionado no encontrado",
+      "model_unsupported": "Modelo no compatible",
+      "no_devices_found": "No se encontraron dispositivos Philips en la red",
+      "no_host": "No se pudo determinar la dirección IP del dispositivo",
+      "timeout": "Tiempo de espera agotado, no se puede conectar al dispositivo"
+    },
+    "error": {
+      "connect": "No se puede conectar al dispositivo",
+      "host": "Se requiere la dirección del dispositivo"
+    },
+    "progress": {
+      "scanning": "Buscando dispositivos Philips en la red..."
+    },
+    "step": {
+      "confirm": {
+        "description": "¿Desea configurar {model} {name}?"
+      },
+      "manual": {
+        "data": {
+          "host": "Nombre de host o dirección IP del dispositivo"
+        },
+        "title": "Configuración manual"
+      },
+      "pick_device": {
+        "data": {
+          "device": "Dispositivo"
+        },
+        "description": "Se encontraron {count} dispositivo(s) en la red",
+        "title": "Seleccionar dispositivo"
+      },
+      "user": {
+        "description": "Elige cómo añadir tu dispositivo",
+        "menu_options": {
+          "manual": "Introducir IP manualmente",
+          "scan": "Escanear red"
+        },
+        "title": "Nuevo Philips AirPurifier"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "filter_needs_attention": {
+        "name": "Filtro requiere atención",
+        "state": {
+          "off": "OK",
+          "on": "Atención requerida"
+        }
+      },
+      "humidification": {
+        "name": "Humidificación",
+        "state": {
+          "off": "Desactivada",
+          "on": "Activada"
+        }
+      },
+      "water_tank": {
+        "name": "Depósito de agua",
+        "state": {
+          "off": "Vacío",
+          "on": "No vacío"
+        }
+      }
+    },
+    "climate": {
+      "pap": {
+        "name": "Calefactor",
+        "state": {
+          "auto": "Automático",
+          "fan_only": "Ventilación",
+          "heat": "Calefacción",
+          "off": "Apagado"
+        },
+        "state_attributes": {
+          "current_temperature": {
+            "name": "Temperatura actual"
+          },
+          "preset_mode": {
+            "name": "Modo preestablecido",
+            "state": {
+              "auto": "Automático",
+              "high": "Alto",
+              "low": "Bajo",
+              "medium": "Medio",
+              "ventilation": "Ventilación"
+            }
+          },
+          "swing_mode": {
+            "name": "Modo oscilación",
+            "state": {
+              "off": "Desactivado",
+              "on": "Activado"
+            }
+          }
+        }
+      }
+    },
+    "fan": {
+      "pap": {
+        "state_attributes": {
+          "preset_mode": {
+            "name": "Modo preestablecido",
+            "state": {
+              "allergen": "Alérgenos",
+              "auto": "Automático",
+              "auto_general": "Automático/General",
+              "auto_plus": "Automático+",
+              "bacteria": "Bacterias",
+              "gas": "Gas",
+              "gentle": "Suave",
+              "gentle_speed_1": "Suave/Velocidad 1",
+              "high": "Alto",
+              "low": "Bajo",
+              "medium": "Medio",
+              "natural": "Natural",
+              "night": "Noche",
+              "pollution": "Contaminación",
+              "sleep": "Reposo",
+              "sleep_allergy": "Reposo/Alergia",
+              "speed_1": "Velocidad 1",
+              "speed_10": "Velocidad 10",
+              "speed_2": "Velocidad 2",
+              "speed_3": "Velocidad 3",
+              "speed_4": "Velocidad 4",
+              "speed_5": "Velocidad 5",
+              "speed_6": "Velocidad 6",
+              "speed_7": "Velocidad 7",
+              "speed_8": "Velocidad 8",
+              "speed_9": "Velocidad 9",
+              "turbo": "Turbo",
+              "ventilation": "Ventilación"
+            }
+          }
+        }
+      }
+    },
+    "humidifier": {
+      "pap": {
+        "state": {
+          "off": "Apagado",
+          "on": "Encendido"
+        },
+        "state_attributes": {
+          "action": {
+            "state": {
+              "humidifying": "Humidificando",
+              "idle": "Inactivo",
+              "off": "Apagado"
+            }
+          },
+          "current_humidity": {
+            "name": "Humedad actual"
+          },
+          "mode": {
+            "state": {
+              "allergen": "Alérgenos",
+              "auto": "Automático",
+              "high": "Alto",
+              "medium": "Medio",
+              "night": "Noche",
+              "purification": "Purificación",
+              "purification_humidification": "Purificación y humidificación",
+              "sleep": "Reposo",
+              "speed_1": "Velocidad 1",
+              "speed_2": "Velocidad 2",
+              "speed_3": "Velocidad 3",
+              "turbo": "Turbo"
+            }
+          }
+        }
+      }
+    },
+    "light": {
+      "display_backlight": {
+        "name": "Retroiluminación de pantalla"
+      },
+      "light_brightness": {
+        "name": "Brillo"
+      }
+    },
+    "number": {
+      "oscillation": {
+        "name": "Oscilación"
+      },
+      "target_temp": {
+        "name": "Temperatura objetivo"
+      }
+    },
+    "select": {
+      "ambient_light_mode": {
+        "name": "Modo luz ambiental",
+        "state": {
+          "breath": "Respiración",
+          "calm": "Calma",
+          "dawn": "Amanecer",
+          "off": "Apagado",
+          "warm": "Cálido"
+        }
+      },
+      "function": {
+        "name": "Función",
+        "state": {
+          "circulation": "Circulación",
+          "fan": "Ventilador",
+          "heating": "Calefacción",
+          "purification": "Purificación",
+          "purification_humidification": "Purificación y humidificación"
+        }
+      },
+      "lamp_mode": {
+        "name": "Modo lámpara",
+        "state": {
+          "air_quality": "Calidad del aire",
+          "ambient_light_mode": "Ambiente",
+          "humidity": "Humedad",
+          "off": "Apagado"
+        }
+      },
+      "preferred_index": {
+        "name": "Índice preferido",
+        "state": {
+          "gas": "Gas",
+          "indoor_allergen_index": "Índice de alérgenos interior",
+          "pm25": "PM2.5"
+        }
+      },
+      "timer": {
+        "name": "Temporizador",
+        "state": {
+          "off": "Desactivado",
+          "on": "Activado"
+        }
+      }
+    },
+    "sensor": {
+      "active_carbon_filter": {
+        "name": "Filtro de carbón activo"
+      },
+      "gas": {
+        "name": "Gas"
+      },
+      "hepa_filter": {
+        "name": "Filtro HEPA"
+      },
+      "humidity": {
+        "name": "Humedad"
+      },
+      "indoor_allergen_index": {
+        "name": "Índice de alérgenos interior"
+      },
+      "nanoprotect_filter": {
+        "name": "Filtro NanoProtect"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "pre_filter": {
+        "name": "Prefiltro"
+      },
+      "rssi": {
+        "name": "RSSI"
+      },
+      "temperature": {
+        "name": "Temperatura"
+      },
+      "time_remaining": {
+        "name": "Tiempo restante"
+      },
+      "total_volatile_organic_compounds": {
+        "name": "Compuestos orgánicos volátiles totales"
+      },
+      "water_level": {
+        "name": "Nivel de agua"
+      },
+      "wick": {
+        "name": "Mecha"
+      }
+    },
+    "switch": {
+      "auto_plus": {
+        "name": "Auto plus"
+      },
+      "auto_quickdry_mode": {
+        "name": "Modo secado rápido automático"
+      },
+      "beep": {
+        "name": "Sonido"
+      },
+      "child_lock": {
+        "name": "Bloqueo infantil"
+      },
+      "quickdry_mode": {
+        "name": "Modo secado rápido"
+      },
+      "standby_sensors": {
+        "name": "Sensores en espera"
+      }
+    }
+  },
+  "title": "Philips AirPurifier"
+}
