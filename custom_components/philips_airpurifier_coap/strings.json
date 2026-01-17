@@ -109,7 +109,7 @@
           "action": {
             "state": {
               "off": "Off",
-              "humidifying": "humidifying",
+              "humidifying": "Humidifying",
               "idle": "Idle"
             }
           },
