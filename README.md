@@ -126,7 +126,7 @@ You can help to get us there.
 
 Please open an issue and provide the raw status-data for each combination of modes and speeds for your model.
 
-To aquire those information please follow these steps:
+To acquire those information please follow these steps:
 
 ### Prepare the environment
 
@@ -143,10 +143,10 @@ Install `aioairctrl` package inside the virtual environment
 python -m pip install aioairctrl
 ```
 
-### Aquire raw status-data
+### Acquire raw status-data
 
 - Use the philips-app to activate a mode or speed
-- run the following command to aquire the raw data (still in the virtual environment)
+- run the following command to acquire the raw data (still in the virtual environment)
 
 ```sh
 aioairctrl --host $DEVICE_IP status --json
@@ -160,7 +160,7 @@ deactivate
 
 ## Debugging
 
-To aquire debug-logs, add the following to your `configuration.yaml`:
+To acquire debug-logs, add the following to your `configuration.yaml`:
 
 ```yaml
 logger:
@@ -191,7 +191,7 @@ Unlike the original `philips_airpurifier_coap` integration, this version does no
 
 ### Attributes
 
-The `fan` entity has some additional attributes not captured with sensors. Specifcs depend on the model. The following list gives an overview:
+The `fan` entity has some additional attributes not captured with sensors. Specifics depend on the model. The following list gives an overview:
 
 | attribute |content | example |
 |---|---|---|

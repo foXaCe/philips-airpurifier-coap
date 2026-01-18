@@ -226,10 +226,7 @@ class PhilipsHeater(PhilipsGenericControlBase, ClimateEntity):
     @property
     def is_on(self) -> bool | None:
         """Return the device state."""
-        if (
-            self._device_status.get(self._power_key)
-            == self._description[FanAttributes.OFF]
-        ):
+        if self._device_status.get(self._power_key) == self._description[FanAttributes.OFF]:
             return False
 
         return True
@@ -259,8 +256,6 @@ class PhilipsHeater(PhilipsGenericControlBase, ClimateEntity):
         temperature = int(kwargs.get(ATTR_TEMPERATURE))
 
         target = max(self._attr_min_temp, min(temperature, self._attr_max_temp))
-        await self.coordinator.client.set_control_value(
-            self._temperature_target_key, target
-        )
+        await self.coordinator.client.set_control_value(self._temperature_target_key, target)
         self._device_status[self._temperature_target_key] = temperature
         self._handle_coordinator_update()

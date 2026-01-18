@@ -1,7 +1,5 @@
 """Tests for helper functions."""
 
-import pytest
-
 from custom_components.philips_airpurifier_coap.const import PhilipsApi
 from custom_components.philips_airpurifier_coap.helpers import extract_model, extract_name
 

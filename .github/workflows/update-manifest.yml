@@ -53,9 +53,9 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-          
+
             const draftRelease = releases.find(release => release.draft && release.tag_name === process.env.GITHUB_REF_NAME);
-          
+
             if (draftRelease) {
               await github.repos.updateRelease({
                 owner: context.repo.owner,

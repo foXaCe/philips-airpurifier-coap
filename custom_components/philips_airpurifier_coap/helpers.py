@@ -82,7 +82,7 @@ async def ping_sweep(network_prefix: str) -> set[str]:
     for i in range(1, 255):
         ip = f"{network_prefix}.{i}"
         tasks.append(check_port(ip, 5683))  # CoAP
-        tasks.append(check_port(ip, 80))    # HTTP
+        tasks.append(check_port(ip, 80))  # HTTP
 
     await asyncio.gather(*tasks)
     await asyncio.sleep(1)  # Wait for ARP responses
@@ -113,14 +113,14 @@ async def _check_single_ip(
             pass  # Expected for non-Philips devices
         except asyncio.CancelledError:
             _LOGGER.debug("Cancelled checking %s", ip)
-        except Exception:
+        except Exception:  # noqa: S110
             pass  # Silently ignore non-Philips devices
         finally:
             if client:
                 try:
                     await asyncio.wait_for(client.shutdown(), timeout=1)
-                except Exception:
-                    pass
+                except Exception:  # noqa: S110
+                    pass  # Best effort shutdown
         return None
 
 

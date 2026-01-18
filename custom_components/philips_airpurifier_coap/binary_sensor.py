@@ -60,9 +60,7 @@ async def async_setup_entry(
     ]
 
     # Check if device has any filter sensors, then add filter alert sensor
-    available_filters = [
-        f for f in FILTER_TYPES if f in status and f not in unavailable_filters
-    ]
+    available_filters = [f for f in FILTER_TYPES if f in status and f not in unavailable_filters]
     if available_filters:
         binary_sensors.append(
             PhilipsFilterAlertSensor(hass, entry, config_entry_data, available_filters)

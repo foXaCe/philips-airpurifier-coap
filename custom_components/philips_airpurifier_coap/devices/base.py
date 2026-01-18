@@ -59,9 +59,7 @@ class PhilipsEntity(Entity):
             sw_version=self._device_status[PhilipsApi.WIFI_VERSION],
             serial_number=self._device_status[PhilipsApi.DEVICE_ID],
             identifiers={(DOMAIN, self._device_status[PhilipsApi.DEVICE_ID])},
-            connections={
-                (CONNECTION_NETWORK_MAC, self.config_entry_data.device_information.mac)
-            }
+            connections={(CONNECTION_NETWORK_MAC, self.config_entry_data.device_information.mac)}
             if self.config_entry_data.device_information.mac is not None
             else None,
         )
@@ -84,9 +82,7 @@ class PhilipsEntity(Entity):
     async def async_added_to_hass(self) -> None:
         """Register with hass that routine got added."""
 
-        remove_callback = self.coordinator.async_add_listener(
-            self._handle_coordinator_update
-        )
+        remove_callback = self.coordinator.async_add_listener(self._handle_coordinator_update)
 
         self.async_on_remove(remove_callback)
 
@@ -213,9 +209,7 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
 
         # set the supported features of the fan
         self._attr_supported_features |= (
-            FanEntityFeature.PRESET_MODE
-            | FanEntityFeature.TURN_OFF
-            | FanEntityFeature.TURN_ON
+            FanEntityFeature.PRESET_MODE | FanEntityFeature.TURN_OFF | FanEntityFeature.TURN_ON
         )
 
         if self.KEY_OSCILLATION is not None:
@@ -256,9 +250,7 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
             await self.async_set_percentage(percentage)
             return
 
-        await self.coordinator.client.set_control_value(
-            self.KEY_PHILIPS_POWER, self.STATE_POWER_ON
-        )
+        await self.coordinator.client.set_control_value(self.KEY_PHILIPS_POWER, self.STATE_POWER_ON)
 
         self._device_status[self.KEY_PHILIPS_POWER] = self.STATE_POWER_ON
         self._handle_coordinator_update()

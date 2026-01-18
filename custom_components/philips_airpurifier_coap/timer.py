@@ -57,7 +57,7 @@ class Timer:
     def setTimeout(self, timeout):
         """Set a new timeout."""
         self._timeout = timeout
-        # Set new Timeout immediatly effective
+        # Set new Timeout immediately effective
         self.reset()
 
     def cancel(self, msg="STOP"):

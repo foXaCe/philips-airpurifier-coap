@@ -41,8 +41,6 @@ async def async_get_config_entry_diagnostics(
             "mac": "**REDACTED**" if config_entry_data.device_information.mac else None,
         },
         "coordinator": {
-            "status": async_redact_data(
-                config_entry_data.coordinator.status or {}, TO_REDACT
-            ),
+            "status": async_redact_data(config_entry_data.coordinator.status or {}, TO_REDACT),
         },
     }

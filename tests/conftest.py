@@ -1,7 +1,8 @@
 """Pytest configuration and fixtures for Philips AirPurifier CoAP tests."""
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from .fixtures.mock_data import SAMPLE_STATUS_AC3033
 

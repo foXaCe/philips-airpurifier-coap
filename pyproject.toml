@@ -71,4 +71,4 @@ combine-as-imports = true
 
 [tool.bandit]
 exclude_dirs = ["tests", ".venv", "venv"]
-skips = ["B101"]  # assert used in tests
+skips = ["B101", "B110"]  # B101: assert in tests, B110: try/except/pass (intentional)

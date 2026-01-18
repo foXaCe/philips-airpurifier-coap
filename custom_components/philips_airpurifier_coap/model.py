@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, TypedDict
-from xmlrpc.client import boolean
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import EntityCategory, UnitOfTemperature, UnitOfTime
@@ -75,7 +74,7 @@ class LightDescription(TypedDict):
     entity_category: str
     switch_on: Any
     switch_off: Any
-    dimmable: boolean
+    dimmable: bool
 
 
 class SelectDescription(TypedDict):
