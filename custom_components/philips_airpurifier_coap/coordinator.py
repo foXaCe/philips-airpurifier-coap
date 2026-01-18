@@ -73,7 +73,7 @@ class Coordinator:
 
             self._reconnect_task = asyncio.create_task(self._reconnect())
 
-        except:  # noqa: E722
+        except Exception:
             _LOGGER.exception("Exception on starting reconnect!")
 
     async def _reconnect(self):
@@ -90,7 +90,7 @@ class Coordinator:
             # Reconnect took to long
             pass
 
-        except:  # noqa: E722
+        except Exception:
             _LOGGER.exception("_reconnect error")
 
     async def async_first_refresh(self) -> None:
@@ -104,9 +104,7 @@ class Coordinator:
             _LOGGER.debug("finished first refresh for host %s", self.host)
 
         except Exception as ex:
-            _LOGGER.error(
-                "Config not ready, first refresh failed for host %s", self.host
-            )
+            _LOGGER.error("Config not ready, first refresh failed for host %s", self.host)
             raise ConfigEntryNotReady from ex
 
     @callback
