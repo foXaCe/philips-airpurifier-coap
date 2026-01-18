@@ -1,25 +1,305 @@
 {
-  "title": "Philips AirPurifier",
   "config": {
     "abort": {
       "already_configured": "Dispozitiv deja configurat",
+      "device_not_found": "Dispozitivul selectat nu a fost găsit",
       "model_unsupported": "Modelul nu este suportat",
+      "no_devices_found": "Nu s-au găsit dispozitive Philips în rețea",
+      "no_host": "Nu s-a putut determina adresa IP a dispozitivului",
       "timeout": "Timeout, nu se poate conecta la dispozitiv"
     },
+    "error": {
+      "connect": "Nu se poate conecta la dispozitiv",
+      "host": "Adresa dispozitivului este obligatorie"
+    },
+    "progress": {
+      "scanning": "Căutare dispozitive Philips în rețea..."
+    },
     "step": {
-      "user": {
-        "title": "Dispozitiv nou Philips AirPurifier",
-        "data": {
-          "host": "Numele de gazdă sau adresa IP a dispozitivului"
-        }
-      },
       "confirm": {
         "description": "Doriți să configurați {model} {name}?"
+      },
+      "manual": {
+        "data": {
+          "host": "Numele de gazdă sau adresa IP a dispozitivului"
+        },
+        "title": "Configurare manuală"
+      },
+      "pick_device": {
+        "data": {
+          "device": "Dispozitiv"
+        },
+        "description": "S-au găsit {count} dispozitiv(e) în rețea",
+        "title": "Selectare dispozitiv"
+      },
+      "user": {
+        "description": "Alegeți cum să adăugați dispozitivul",
+        "menu_options": {
+          "manual": "Introducere IP manual",
+          "scan": "Scanare rețea"
+        },
+        "title": "Dispozitiv nou Philips AirPurifier"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "filter_needs_attention": {
+        "name": "Filtrul necesită atenție",
+        "state": {
+          "off": "OK",
+          "on": "Necesită atenție"
+        }
+      },
+      "humidification": {
+        "name": "Umidificare",
+        "state": {
+          "off": "Oprit",
+          "on": "Pornit"
+        }
+      },
+      "water_tank": {
+        "name": "Rezervor apă",
+        "state": {
+          "off": "Gol",
+          "on": "Nu este gol"
+        }
       }
     },
-    "error": {
-      "host": "Adresa dispozitivului este obligatorie",
-      "connect": "Nu se poate conecta la dispozitiv"
+    "climate": {
+      "pap": {
+        "name": "Încălzitor cu ventilator",
+        "state": {
+          "auto": "Auto",
+          "fan_only": "Ventilație",
+          "heat": "Încălzire",
+          "off": "Oprit"
+        },
+        "state_attributes": {
+          "current_temperature": {
+            "name": "Temperatura curentă"
+          },
+          "preset_mode": {
+            "name": "Mod presetat",
+            "state": {
+              "auto": "Auto",
+              "high": "Ridicat",
+              "low": "Scăzut",
+              "medium": "Mediu",
+              "ventilation": "Ventilație"
+            }
+          },
+          "swing_mode": {
+            "name": "Mod balansare",
+            "state": {
+              "off": "Oprit",
+              "on": "Pornit"
+            }
+          }
+        }
+      }
+    },
+    "fan": {
+      "pap": {
+        "state_attributes": {
+          "preset_mode": {
+            "name": "Mod presetat",
+            "state": {
+              "allergen": "Alergeni",
+              "auto": "Auto",
+              "auto_general": "Auto/General",
+              "auto_plus": "Auto+",
+              "bacteria": "Bacterii",
+              "gas": "Gaz",
+              "gentle": "Delicat",
+              "gentle_speed_1": "Delicat/Viteză 1",
+              "high": "Ridicat",
+              "low": "Scăzut",
+              "medium": "Mediu",
+              "natural": "Natural",
+              "night": "Noapte",
+              "pollution": "Poluare",
+              "sleep": "Somn",
+              "sleep_allergy": "Somn/Alergie",
+              "speed_1": "Viteză 1",
+              "speed_10": "Viteză 10",
+              "speed_2": "Viteză 2",
+              "speed_3": "Viteză 3",
+              "speed_4": "Viteză 4",
+              "speed_5": "Viteză 5",
+              "speed_6": "Viteză 6",
+              "speed_7": "Viteză 7",
+              "speed_8": "Viteză 8",
+              "speed_9": "Viteză 9",
+              "turbo": "Turbo",
+              "ventilation": "Ventilație"
+            }
+          }
+        }
+      }
+    },
+    "humidifier": {
+      "pap": {
+        "state": {
+          "off": "Oprit",
+          "on": "Pornit"
+        },
+        "state_attributes": {
+          "action": {
+            "state": {
+              "humidifying": "Umidifică",
+              "idle": "Inactiv",
+              "off": "Oprit"
+            }
+          },
+          "current_humidity": {
+            "name": "Umiditate curentă"
+          },
+          "mode": {
+            "state": {
+              "allergen": "Alergeni",
+              "auto": "Auto",
+              "high": "Ridicat",
+              "medium": "Mediu",
+              "night": "Noapte",
+              "purification": "Purificare",
+              "purification_humidification": "Purificare și umidificare",
+              "sleep": "Somn",
+              "speed_1": "Viteză 1",
+              "speed_2": "Viteză 2",
+              "speed_3": "Viteză 3",
+              "turbo": "Turbo"
+            }
+          }
+        }
+      }
+    },
+    "light": {
+      "display_backlight": {
+        "name": "Iluminare ecran"
+      },
+      "light_brightness": {
+        "name": "Luminozitate"
+      }
+    },
+    "number": {
+      "oscillation": {
+        "name": "Oscilație"
+      },
+      "target_temp": {
+        "name": "Temperatura țintă"
+      }
+    },
+    "select": {
+      "ambient_light_mode": {
+        "name": "Mod lumină ambientală",
+        "state": {
+          "breath": "Respirație",
+          "calm": "Calm",
+          "dawn": "Zori",
+          "off": "Oprit",
+          "warm": "Cald"
+        }
+      },
+      "function": {
+        "name": "Funcție",
+        "state": {
+          "circulation": "Circulație",
+          "fan": "Ventilator",
+          "heating": "Încălzire",
+          "purification": "Purificare",
+          "purification_humidification": "Purificare și umidificare"
+        }
+      },
+      "lamp_mode": {
+        "name": "Mod lampă",
+        "state": {
+          "air_quality": "Calitatea aerului",
+          "ambient_light_mode": "Ambient",
+          "humidity": "Umiditate",
+          "off": "Oprit"
+        }
+      },
+      "preferred_index": {
+        "name": "Index preferat",
+        "state": {
+          "gas": "Gaz",
+          "indoor_allergen_index": "Index alergeni interior",
+          "pm25": "PM2.5"
+        }
+      },
+      "timer": {
+        "name": "Cronometru",
+        "state": {
+          "off": "Oprit",
+          "on": "Pornit"
+        }
+      }
+    },
+    "sensor": {
+      "active_carbon_filter": {
+        "name": "Filtru carbon activ"
+      },
+      "gas": {
+        "name": "Gaz"
+      },
+      "hepa_filter": {
+        "name": "Filtru HEPA"
+      },
+      "humidity": {
+        "name": "Umiditate"
+      },
+      "indoor_allergen_index": {
+        "name": "Index alergeni interior"
+      },
+      "nanoprotect_filter": {
+        "name": "Filtru NanoProtect"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "pre_filter": {
+        "name": "Pre-filtru"
+      },
+      "rssi": {
+        "name": "RSSI"
+      },
+      "temperature": {
+        "name": "Temperatură"
+      },
+      "time_remaining": {
+        "name": "Timp rămas"
+      },
+      "total_volatile_organic_compounds": {
+        "name": "Compuși organici volatili totali"
+      },
+      "water_level": {
+        "name": "Nivel apă"
+      },
+      "wick": {
+        "name": "Fitil"
+      }
+    },
+    "switch": {
+      "auto_plus": {
+        "name": "Auto plus"
+      },
+      "auto_quickdry_mode": {
+        "name": "Mod uscare rapidă auto"
+      },
+      "beep": {
+        "name": "Semnal sonor"
+      },
+      "child_lock": {
+        "name": "Blocare copii"
+      },
+      "quickdry_mode": {
+        "name": "Mod uscare rapidă"
+      },
+      "standby_sensors": {
+        "name": "Senzori standby"
+      }
     }
-  }
+  },
+  "title": "Philips AirPurifier"
 }

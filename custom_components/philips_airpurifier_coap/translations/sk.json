@@ -1,25 +1,305 @@
 {
-  "title": "Philips AirPurifier",
   "config": {
     "abort": {
       "already_configured": "Zariadenie je už konfigurované",
-      "model_unsupported": "Nepodporovaný model",
-      "timeout": "Časový limit, nemôže sa pripojiť k zariadeniu"
-    },
-    "step": {
-      "user": {
-        "title": "Nový Philips AirPurifier",
-        "data": {
-          "host": "Meno hostiteľa alebo adresa IP"
-        }
-      },
-      "confirm": {
-        "description": "Chcete nastaviť {model} {name}?"
-      }
+      "device_not_found": "Vybrané zariadenie nebolo nájdené",
+      "model_unsupported": "Model nie je podporovaný",
+      "no_devices_found": "V sieti neboli nájdené žiadne zariadenia Philips",
+      "no_host": "Nepodarilo sa určiť IP adresu zariadenia",
+      "timeout": "Časový limit, nemožno sa pripojiť k zariadeniu"
     },
     "error": {
-      "host": "Je požadovaná adresa zariadenia",
-      "connect": "Nemôžné pripojiť sa k zariadeniu"
+      "connect": "Nemožno sa pripojiť k zariadeniu",
+      "host": "Adresa zariadenia je povinná"
+    },
+    "progress": {
+      "scanning": "Vyhľadávanie zariadení Philips v sieti..."
+    },
+    "step": {
+      "confirm": {
+        "description": "Chcete nastaviť {model} {name}?"
+      },
+      "manual": {
+        "data": {
+          "host": "Názov hostiteľa alebo IP adresa zariadenia"
+        },
+        "title": "Manuálna konfigurácia"
+      },
+      "pick_device": {
+        "data": {
+          "device": "Zariadenie"
+        },
+        "description": "Nájdených {count} zariadení v sieti",
+        "title": "Výber zariadenia"
+      },
+      "user": {
+        "description": "Vyberte spôsob pridania zariadenia",
+        "menu_options": {
+          "manual": "Zadať IP adresu manuálne",
+          "scan": "Skenovať sieť"
+        },
+        "title": "Nový Philips AirPurifier"
+      }
     }
-  }
+  },
+  "entity": {
+    "binary_sensor": {
+      "filter_needs_attention": {
+        "name": "Filter vyžaduje pozornosť",
+        "state": {
+          "off": "OK",
+          "on": "Vyžaduje pozornosť"
+        }
+      },
+      "humidification": {
+        "name": "Zvlhčovanie",
+        "state": {
+          "off": "Vypnuté",
+          "on": "Zapnuté"
+        }
+      },
+      "water_tank": {
+        "name": "Nádrž na vodu",
+        "state": {
+          "off": "Prázdna",
+          "on": "Nie je prázdna"
+        }
+      }
+    },
+    "climate": {
+      "pap": {
+        "name": "Ventilátorový ohrievač",
+        "state": {
+          "auto": "Auto",
+          "fan_only": "Ventilácia",
+          "heat": "Kúrenie",
+          "off": "Vypnuté"
+        },
+        "state_attributes": {
+          "current_temperature": {
+            "name": "Aktuálna teplota"
+          },
+          "preset_mode": {
+            "name": "Prednastavený režim",
+            "state": {
+              "auto": "Auto",
+              "high": "Vysoký",
+              "low": "Nízky",
+              "medium": "Stredný",
+              "ventilation": "Ventilácia"
+            }
+          },
+          "swing_mode": {
+            "name": "Režim kývanie",
+            "state": {
+              "off": "Vypnuté",
+              "on": "Zapnuté"
+            }
+          }
+        }
+      }
+    },
+    "fan": {
+      "pap": {
+        "state_attributes": {
+          "preset_mode": {
+            "name": "Prednastavený režim",
+            "state": {
+              "allergen": "Alergén",
+              "auto": "Auto",
+              "auto_general": "Auto/Všeobecný",
+              "auto_plus": "Auto+",
+              "bacteria": "Baktérie",
+              "gas": "Plyn",
+              "gentle": "Jemný",
+              "gentle_speed_1": "Jemný/Rýchlosť 1",
+              "high": "Vysoký",
+              "low": "Nízky",
+              "medium": "Stredný",
+              "natural": "Prirodzený",
+              "night": "Noc",
+              "pollution": "Znečistenie",
+              "sleep": "Spánok",
+              "sleep_allergy": "Spánok/Alergia",
+              "speed_1": "Rýchlosť 1",
+              "speed_10": "Rýchlosť 10",
+              "speed_2": "Rýchlosť 2",
+              "speed_3": "Rýchlosť 3",
+              "speed_4": "Rýchlosť 4",
+              "speed_5": "Rýchlosť 5",
+              "speed_6": "Rýchlosť 6",
+              "speed_7": "Rýchlosť 7",
+              "speed_8": "Rýchlosť 8",
+              "speed_9": "Rýchlosť 9",
+              "turbo": "Turbo",
+              "ventilation": "Ventilácia"
+            }
+          }
+        }
+      }
+    },
+    "humidifier": {
+      "pap": {
+        "state": {
+          "off": "Vypnuté",
+          "on": "Zapnuté"
+        },
+        "state_attributes": {
+          "action": {
+            "state": {
+              "humidifying": "Zvlhčuje",
+              "idle": "Nečinný",
+              "off": "Vypnuté"
+            }
+          },
+          "current_humidity": {
+            "name": "Aktuálna vlhkosť"
+          },
+          "mode": {
+            "state": {
+              "allergen": "Alergén",
+              "auto": "Auto",
+              "high": "Vysoký",
+              "medium": "Stredný",
+              "night": "Noc",
+              "purification": "Čistenie",
+              "purification_humidification": "Čistenie a zvlhčovanie",
+              "sleep": "Spánok",
+              "speed_1": "Rýchlosť 1",
+              "speed_2": "Rýchlosť 2",
+              "speed_3": "Rýchlosť 3",
+              "turbo": "Turbo"
+            }
+          }
+        }
+      }
+    },
+    "light": {
+      "display_backlight": {
+        "name": "Podsvietenie displeja"
+      },
+      "light_brightness": {
+        "name": "Jas svetla"
+      }
+    },
+    "number": {
+      "oscillation": {
+        "name": "Oscilácia"
+      },
+      "target_temp": {
+        "name": "Cieľová teplota"
+      }
+    },
+    "select": {
+      "ambient_light_mode": {
+        "name": "Režim okolitého svetla",
+        "state": {
+          "breath": "Dýchanie",
+          "calm": "Pokojný",
+          "dawn": "Úsvit",
+          "off": "Vypnuté",
+          "warm": "Teplý"
+        }
+      },
+      "function": {
+        "name": "Funkcia",
+        "state": {
+          "circulation": "Cirkulácia",
+          "fan": "Ventilátor",
+          "heating": "Kúrenie",
+          "purification": "Čistenie",
+          "purification_humidification": "Čistenie a zvlhčovanie"
+        }
+      },
+      "lamp_mode": {
+        "name": "Režim lampy",
+        "state": {
+          "air_quality": "Kvalita vzduchu",
+          "ambient_light_mode": "Okolitý",
+          "humidity": "Vlhkosť",
+          "off": "Vypnuté"
+        }
+      },
+      "preferred_index": {
+        "name": "Preferovaný index",
+        "state": {
+          "gas": "Plyn",
+          "indoor_allergen_index": "Index vnútorných alergénov",
+          "pm25": "PM2.5"
+        }
+      },
+      "timer": {
+        "name": "Časovač",
+        "state": {
+          "off": "Vypnutý",
+          "on": "Zapnutý"
+        }
+      }
+    },
+    "sensor": {
+      "active_carbon_filter": {
+        "name": "Filter s aktívnym uhlím"
+      },
+      "gas": {
+        "name": "Plyn"
+      },
+      "hepa_filter": {
+        "name": "HEPA filter"
+      },
+      "humidity": {
+        "name": "Vlhkosť"
+      },
+      "indoor_allergen_index": {
+        "name": "Index vnútorných alergénov"
+      },
+      "nanoprotect_filter": {
+        "name": "NanoProtect filter"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "pre_filter": {
+        "name": "Predfilter"
+      },
+      "rssi": {
+        "name": "RSSI"
+      },
+      "temperature": {
+        "name": "Teplota"
+      },
+      "time_remaining": {
+        "name": "Zostávajúci čas"
+      },
+      "total_volatile_organic_compounds": {
+        "name": "Celkové prchavé organické zlúčeniny"
+      },
+      "water_level": {
+        "name": "Hladina vody"
+      },
+      "wick": {
+        "name": "Knôt"
+      }
+    },
+    "switch": {
+      "auto_plus": {
+        "name": "Auto plus"
+      },
+      "auto_quickdry_mode": {
+        "name": "Automatický režim rýchleho sušenia"
+      },
+      "beep": {
+        "name": "Zvukový signál"
+      },
+      "child_lock": {
+        "name": "Detská poistka"
+      },
+      "quickdry_mode": {
+        "name": "Režim rýchleho sušenia"
+      },
+      "standby_sensors": {
+        "name": "Pohotovostné senzory"
+      }
+    }
+  },
+  "title": "Philips AirPurifier"
 }
