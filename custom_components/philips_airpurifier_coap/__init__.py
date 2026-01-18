@@ -144,44 +144,53 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _LOGGER.debug("async_setup_entry called for host %s", host)
 
-    # Run MAC lookup and CoAP client creation in parallel for faster startup
-    async def get_mac_safe() -> str | None:
-        """Get MAC address without blocking startup on failure."""
-        try:
-            return await asyncio.wait_for(async_get_mac_address_from_host(hass, host), timeout=5)
-        except (TimeoutError, Exception) as ex:
-            _LOGGER.debug("MAC lookup failed for %s: %s", host, ex)
-            return None
-
+    # Create CoAP client with reduced timeout for faster startup
     try:
-        mac_task = asyncio.create_task(get_mac_safe())
-        client = await asyncio.wait_for(CoAPClient.create(host), timeout=10)
+        client = await asyncio.wait_for(CoAPClient.create(host), timeout=5)
         _LOGGER.debug("got a valid client for host %s", host)
-        mac = await mac_task
-
+    except TimeoutError as ex:
+        _LOGGER.warning("Timeout connecting to host %s after 5s", host)
+        raise ConfigEntryNotReady from ex
     except Exception as ex:
-        _LOGGER.warning(r"Failed to connect to host %s: %s", host, ex)
+        _LOGGER.warning("Failed to connect to host %s: %s", host, ex)
         raise ConfigEntryNotReady from ex
 
-    device_information = DeviceInformation(
-        host=host, mac=mac, model=model, name=name, device_id=device_id
-    )
+    # Defer MAC lookup - run in background after setup to avoid blocking startup
+    async def get_mac_deferred() -> None:
+        """Get MAC address in background and update device info."""
+        try:
+            mac = await asyncio.wait_for(async_get_mac_address_from_host(hass, host), timeout=3)
+            if mac and entry.entry_id in hass.data.get(DOMAIN, {}):
+                config_entry_data: ConfigEntryData = hass.data[DOMAIN][entry.entry_id]
+                config_entry_data.device_information.mac = mac
+                _LOGGER.debug("MAC address updated for %s: %s", host, mac)
+        except Exception as ex:
+            _LOGGER.debug("MAC lookup failed for %s: %s", host, ex)
 
-    # check if we have status data, it will be missing in old entries
+    # Check if we have status data, it will be missing in old entries
     if CONF_STATUS not in entry.data:
         _LOGGER.warning("No status data found for model %s, trying to fetch it", model)
         coordinator = Coordinator(hass, client, host, None)
-        await coordinator.async_first_refresh()
+        # Add timeout to first refresh to avoid blocking too long
+        try:
+            await asyncio.wait_for(coordinator.async_first_refresh(), timeout=10)
+        except TimeoutError as ex:
+            _LOGGER.warning("Timeout fetching status for %s", host)
+            raise ConfigEntryNotReady from ex
         status = coordinator.status
 
-        # update the entry with the status data
+        # Update the entry with the status data
         new_data = {**entry.data}
         new_data[CONF_STATUS] = status
         hass.config_entries.async_update_entry(entry, data=new_data)
-
     else:
         status = entry.data[CONF_STATUS]
         coordinator = Coordinator(hass, client, host, status)
+
+    # Initialize device info without MAC (will be updated in background)
+    device_information = DeviceInformation(
+        host=host, mac=None, model=model, name=name, device_id=device_id
+    )
 
     # store the data in the hass.data
     config_entry_data = ConfigEntryData(
@@ -193,6 +202,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = config_entry_data
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # Start deferred MAC lookup in background (non-blocking)
+    hass.async_create_task(get_mac_deferred())
 
     return True
 
