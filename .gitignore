@@ -48,6 +48,7 @@ config/
 home-assistant.log
 home-assistant_v2.db
 
-# Claude Code
+# Claude Code (fichiers locaux, ne pas partager)
 CLAUDE.md
+AGENTS.md
 .claude/

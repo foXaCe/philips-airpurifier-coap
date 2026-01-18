@@ -68,3 +68,7 @@ max-complexity = 10
 known-first-party = ["homeassistant", "tests"]
 force-sort-within-sections = true
 combine-as-imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "venv"]
+skips = ["B101"]  # assert used in tests
