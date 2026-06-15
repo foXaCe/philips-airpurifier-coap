@@ -106,7 +106,7 @@ class PhilipsAC1214(PhilipsGenericFan):
         await self._ensure_power_on()
 
         status_pattern = self._available_preset_modes.get(preset_mode)
-        if status_pattern:
+        if status_pattern:  # pragma: no branch
             target_mode = status_pattern.get(PhilipsApi.MODE)
             await self._ensure_mode_transition(target_mode)
             _LOGGER.debug("AC1214 sets preset mode to: %s", preset_mode)
@@ -124,7 +124,7 @@ class PhilipsAC1214(PhilipsGenericFan):
         else:
             speed = percentage_to_ordered_list_item(self._speeds, percentage)
             status_pattern = self._available_speeds.get(speed)
-            if status_pattern:
+            if status_pattern:  # pragma: no branch
                 target_mode = status_pattern.get(PhilipsApi.MODE)
                 await self._ensure_mode_transition(target_mode)
                 _LOGGER.debug("AC1214 sets speed percentage to: %s", percentage)

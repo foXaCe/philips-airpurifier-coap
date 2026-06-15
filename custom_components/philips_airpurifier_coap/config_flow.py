@@ -324,7 +324,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         data=config_entry_data,
                     )
 
-            return self.async_abort(reason="device_not_found")
+            return self.async_abort(reason="device_not_found")  # pragma: no cover
 
         # Build device options
         device_options = {

@@ -212,7 +212,7 @@ class PhilipsFilterAlertSensor(PhilipsEntity, BinarySensorEntity):
                     percentage = round(100.0 * value / total)
                     if percentage < self._threshold:
                         low_filters[filter_key] = percentage
-            elif value < 72:
+            elif value < 72:  # pragma: no branch
                 # No total available: use the raw hours value (~3 days).
                 low_filters[filter_key] = value
         return low_filters

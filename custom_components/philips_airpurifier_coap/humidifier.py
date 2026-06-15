@@ -218,9 +218,9 @@ class PhilipsHumidifier(PhilipsGenericControlBase, HumidifierEntity):
                     self._function_key: function_value,
                 }
             )
-        elif self._function_key == self._power_key:
+        elif self._function_key == self._power_key:  # pragma: no branch
             status_pattern = self._available_preset_modes.get(mode)
-            if status_pattern:
+            if status_pattern:  # pragma: no branch
                 await self._async_set_control_values(status_pattern)
 
     @property

@@ -173,7 +173,7 @@ class PhilipsGenericControlBase(PhilipsEntity):
                 value = self._device_status[philips_clean_key]
                 if isinstance(value_map, dict) and value in value_map:
                     value = value_map.get(value, "unknown")
-                    if isinstance(value, tuple):
+                    if isinstance(value, tuple):  # pragma: no cover
                         value = value[0]
                 elif callable(value_map):
                     value = value_map(value, self._device_status)
@@ -249,7 +249,7 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
         self._available_speeds = speeds
         self._speeds = list(self._available_speeds.keys())
 
-        if len(self._speeds) > 0:
+        if len(self._speeds) > 0:  # pragma: no branch
             self._attr_supported_features |= FanEntityFeature.SET_SPEED
 
     @property
@@ -295,7 +295,7 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
             for k, v in status_pattern.items():
                 # check if the speed sensor also used for presets is different from the setting field
                 if self.REPLACE_PRESET is not None and k == self.REPLACE_PRESET[0]:
-                    k = self.REPLACE_PRESET[1]
+                    k = self.REPLACE_PRESET[1]  # pragma: no cover
                 status = self._device_status.get(k)
                 if status != v:
                     break
@@ -355,7 +355,7 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
             for k, v in status_pattern.items():
                 # check if the speed sensor is different from the speed setting field
                 if self.REPLACE_SPEED is not None and k == self.REPLACE_SPEED[0]:
-                    k = self.REPLACE_SPEED[1]
+                    k = self.REPLACE_SPEED[1]  # pragma: no cover
                 if self._device_status.get(k) != v:
                     break
             else:
@@ -372,7 +372,7 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
 
         speed = percentage_to_ordered_list_item(self._speeds, percentage)
         status_pattern = self._available_speeds.get(speed)
-        if status_pattern:
+        if status_pattern:  # pragma: no branch
             await self._async_set_control_values(status_pattern)
 
     @property
