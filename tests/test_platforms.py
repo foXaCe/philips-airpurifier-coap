@@ -1,16 +1,33 @@
 """Setup and behaviour tests across the migrated entity platforms."""
 
+import pytest
+
 from custom_components.philips_airpurifier_coap import (
     binary_sensor,
     climate,
+    fan,
     humidifier,
     light,
     number,
     select,
     sensor,
+    switch,
 )
 from custom_components.philips_airpurifier_coap.const import PhilipsApi
+from custom_components.philips_airpurifier_coap.devices import model_to_class
 from homeassistant.core import HomeAssistant
+
+_ALL_PLATFORMS = (
+    binary_sensor,
+    climate,
+    fan,
+    humidifier,
+    light,
+    number,
+    select,
+    sensor,
+    switch,
+)
 
 
 def _status(**extra) -> dict:
@@ -28,6 +45,31 @@ async def _setup(hass, make_runtime, module, model, status=None):
     added: list = []
     await module.async_setup_entry(hass, entry, lambda entities, *_: added.extend(entities))
     return added, runtime
+
+
+# --------------------------------------------------------------------------- #
+# every supported model — smoke test
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize("model", sorted(model_to_class))
+async def test_every_model_sets_up_all_platforms(
+    hass: HomeAssistant, make_runtime, model: str
+) -> None:
+    """Every supported model instantiates and sets up all platforms without raising.
+
+    The status only carries the device-info keys, so few entities are created; the
+    point is that no device definition crashes the fan class (which collects its
+    attributes/presets/speeds across the MRO) or any platform's async_setup_entry.
+    """
+    entry, runtime = make_runtime(model=model, status=_status())
+
+    # The fan entity is the device class; constructing it exercises every model,
+    # including the CREATE_FAN=False ones the fan platform would skip.
+    entity = model_to_class[model](hass, entry, runtime)
+    assert entity.unique_id  # __init__ completed and produced a stable unique_id
+
+    # No platform's async_setup_entry may raise for any supported model.
+    for platform in _ALL_PLATFORMS:
+        await platform.async_setup_entry(hass, entry, lambda *args, **kwargs: None)
 
 
 # --------------------------------------------------------------------------- #
