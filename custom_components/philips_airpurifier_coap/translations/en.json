@@ -343,5 +343,11 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "configured_devices": "Configured devices",
+      "connected_devices": "Connected devices"
+    }
+  },
   "title": "Philips AirPurifier"
 }
