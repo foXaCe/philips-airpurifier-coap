@@ -916,6 +916,14 @@ async def test_humidifier_pure_mode_loop(hass: HomeAssistant, make_runtime) -> N
     assert ent.mode == "low"
 
 
+async def test_humidifier_pure_mode_no_match(hass: HomeAssistant, make_runtime) -> None:
+    """A pure humidifier whose status matches no preset reports no mode."""
+    desc = _desc(humidifier.HUMIDIFIER_TYPES, PhilipsApi.NEW2_HUMIDITY_TARGET2)
+    presets = {"auto": {PhilipsApi.NEW2_POWER: 1, "x": 5}}
+    ent, _ = _humidifier(hass, make_runtime, desc, {PhilipsApi.NEW2_POWER: 1, "x": 99}, presets)
+    assert ent.mode is None
+
+
 async def test_humidifier_set_humidity_nudges(hass: HomeAssistant, make_runtime) -> None:
     """A +/-1 nudge snaps to a full step; a missing target is handled."""
     desc = _desc(humidifier.HUMIDIFIER_TYPES, PhilipsApi.HUMIDITY_TARGET)  # step 10
@@ -990,6 +998,20 @@ async def test_manual_flow_connection_error(hass: HomeAssistant, bypass_integrat
         )
     assert result["type"] == FlowResultType.FORM
     assert result["errors"][CONF_HOST] == "connect"
+
+
+async def test_manual_flow_timeout(hass: HomeAssistant, bypass_integration_deps) -> None:
+    """A timeout while connecting during manual entry aborts the flow."""
+    result = await _menu_to(hass, "manual")
+    with patch(
+        "custom_components.philips_airpurifier_coap.config_flow.CoAPClient.create",
+        AsyncMock(side_effect=TimeoutError),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_HOST: "1.2.3.4"}
+        )
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "timeout"
 
 
 async def test_manual_flow_unsupported_model(hass: HomeAssistant, bypass_integration_deps) -> None:
@@ -1071,6 +1093,61 @@ async def test_pick_second_device(hass: HomeAssistant, bypass_integration_deps) 
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["result"].unique_id == "SECONDDEVICE01"
+
+
+async def test_scan_shows_progress(hass: HomeAssistant, bypass_integration_deps) -> None:
+    """The scan step shows progress while running, then aborts when nothing is found."""
+    release = asyncio.Event()
+
+    async def _slow_scan(*args, **kwargs):
+        await release.wait()
+        return []
+
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
+    with patch(
+        "custom_components.philips_airpurifier_coap.config_flow.scan_for_devices",
+        _slow_scan,
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {"next_step_id": "scan"}
+        )
+        assert result["type"] == FlowResultType.SHOW_PROGRESS
+        release.set()
+        await hass.async_block_till_done()
+        result = await hass.config_entries.flow.async_configure(result["flow_id"])
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "no_devices_found"
+
+
+async def test_pick_device_unsupported_model(hass: HomeAssistant, bypass_integration_deps) -> None:
+    """Picking a discovered device whose model is unsupported aborts the flow."""
+    devices = [
+        {
+            "ip": "1.2.3.4",
+            "model": "ZZ9999/10",
+            "name": "X",
+            "status": {**_CF_STATUS, PhilipsApi.MODEL_ID: "ZZ9999/10"},
+        }
+    ]
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
+    with patch(
+        "custom_components.philips_airpurifier_coap.config_flow.scan_for_devices",
+        AsyncMock(return_value=devices),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {"next_step_id": "scan"}
+        )
+        await hass.async_block_till_done()
+        if result["type"] == FlowResultType.SHOW_PROGRESS:
+            result = await hass.config_entries.flow.async_configure(result["flow_id"])
+
+    assert result["step_id"] == "pick_device"
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"device": "1.2.3.4"}
+    )
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "model_unsupported"
 
 
 async def test_reconfigure_connection_error(hass: HomeAssistant, bypass_integration_deps) -> None:
