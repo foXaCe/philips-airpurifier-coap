@@ -17,7 +17,7 @@ Currently only encrypted-CoAP is implemented.
 
 ## Word of Caution
 
-Due to a bug in the Philips devices, this integration is rather instable. It might or might not work. Even if it seems ok at first, it might stop working after a while. Sometimes, a power cycle of the Philips device helps. Sometimes, only a power cycle and a Home Assistant restart together help. It is frustrating. Do not report this as an issue here. Nobody can help right now. @mhetzi contributed timer code to attempt reconnects if the device is not responsive. Sometimes, that helps. But not always. You've been warned.
+Due to a bug in the Philips devices, this integration is rather instable. It might or might not work. Even if it seems ok at first, it might stop working after a while. Sometimes, a power cycle of the Philips device helps. Sometimes, only a power cycle and a Home Assistant restart together help. It is frustrating. The integration now reconnects automatically when the stream goes quiet (a watchdog re-opens the CoAP connection and raises a repair issue if the device stays unreachable), which helps — but not always. You've been warned.
 
 It all goes back to some reverse engineering by @rgerganov and you can read about it here: https://xakcop.com/post/ctrl-air-purifier/
 
@@ -249,7 +249,7 @@ The integration also provides the original Philips icons for your use in the fro
 | ![Preview](./custom_components/philips_airpurifier_coap/icons/pap/nanoprotect_filter.svg)      | nanoprotect_filter      |
 | ![Preview](./custom_components/philips_airpurifier_coap/icons/pap/filter_replacement.svg)      | filter_replacement      |
 | ![Preview](./custom_components/philips_airpurifier_coap/icons/pap/water_refill.svg)            | water_refill            |
-| ![Preview](./custom_components/philips_airpurifier_coap/icons/pap/prefilter_cleaning.svg)      | prefilter_clearning     |
+| ![Preview](./custom_components/philips_airpurifier_coap/icons/pap/prefilter_cleaning.svg)      | prefilter_cleaning      |
 | ![Preview](./custom_components/philips_airpurifier_coap/icons/pap/prefilter_wick_cleaning.svg) | prefilter_wick_cleaning |
 | ![Preview](./custom_components/philips_airpurifier_coap/icons/pap/pm25.svg)                    | pm25                    |
 | ![Preview](./custom_components/philips_airpurifier_coap/icons/pap/iai.svg)                     | iai                     |
