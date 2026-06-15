@@ -57,6 +57,17 @@ Note: `configuration.yaml` is no longer supported and your configuration is not 
 - If autodiscovery doesn't work for you, you can simply add the device again as described above, using its new IP address. Home Assistant will detect that it knows the device already and adjust the configuration.
 
 
+## Removal
+
+To remove the integration:
+
+1. Go to **Settings → Devices & Services**.
+2. Open the **Philips AirPurifier (with CoAP)** integration.
+3. Use the three-dot menu on the device (or the config entry) and choose **Delete**.
+
+This removes the config entry together with its devices and all associated entities. Nothing is left behind on the device itself. If you installed through HACS and also want to remove the code, remove the repository from HACS afterwards and restart Home Assistant.
+
+
 ## Supported models
 
 Note: Some of these models seem to have a newer firmware that does not allow local connections anymore. If you buy the device with the intention to manage it via Home Assistant, make sure you can return it, if the integration doesn't work for you.
@@ -258,3 +269,77 @@ The integration also provides the original Philips icons for your use in the fro
 | ![Preview](./custom_components/philips_airpurifier_coap/icons/pap/temp_low.svg)                | temp_low                |
 
 Note: you might have to clear your browser cache after installation to see the icons.
+
+
+## How data is updated
+
+This is a **local push** integration. The device is not polled on a fixed interval. Instead, the integration opens an encrypted CoAP `observe` stream to the device and receives a fresh status whenever the device reports a change, so entities update as soon as that push arrives.
+
+A watchdog monitors the stream: if no update is received within three reporting intervals, the integration automatically reconnects. If reconnection keeps failing, the entities are marked unavailable and a repair issue is raised until the connection is restored.
+
+
+## Use cases
+
+- Automatically switch the purifier to **Turbo** when the PM2.5 sensor rises above a threshold, and back to **Auto** when the air quality recovers.
+- Switch to **Sleep**/**Night** mode at bedtime and restore the previous mode in the morning.
+- Get notified (and optionally pause humidification) when the water tank is empty or a filter drops below the configured alert threshold.
+- Expose the device's child-lock so it can be toggled from a dashboard or a house-wide "kids mode".
+
+
+## Example automations
+
+Boost to turbo when air quality drops, then return to auto once it recovers:
+
+```yaml
+automation:
+  - alias: "Purifier boost on high PM2.5"
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.living_room_pm2_5
+        above: 35
+    actions:
+      - action: fan.set_preset_mode
+        target:
+          entity_id: fan.living_room
+        data:
+          preset_mode: turbo
+
+  - alias: "Purifier back to auto when the air is clean"
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.living_room_pm2_5
+        below: 15
+        for: "00:10:00"
+    actions:
+      - action: fan.set_preset_mode
+        target:
+          entity_id: fan.living_room
+        data:
+          preset_mode: auto
+```
+
+Notify when a filter needs attention. The integration fires a `philips_filter_alert` event whenever a filter drops below the configured threshold:
+
+```yaml
+automation:
+  - alias: "Air purifier filter alert"
+    triggers:
+      - trigger: event
+        event_type: philips_filter_alert
+    actions:
+      - action: notify.persistent_notification
+        data:
+          title: "Air purifier filter"
+          message: >-
+            {{ trigger.event.data.filter_name }} is at
+            {{ trigger.event.data.percentage }}% (device
+            {{ trigger.event.data.device_name }}).
+```
+
+
+## Known limitations
+
+- Only **encrypted CoAP** is implemented. Devices or firmware revisions that only expose the Philips cloud API are **not supported** — see the *Word of Caution* above.
+- The local connection can be unstable on some firmware. The integration reconnects automatically, but a device power-cycle is occasionally required.
+- One physical device per config entry; the integration does not aggregate several units into a single device.
+- YAML setup via `configuration.yaml` is no longer supported — configuration is done entirely through the UI.

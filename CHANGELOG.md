@@ -25,7 +25,13 @@ automations and history are preserved.
 - Support for AC2210, AC2220, AC2221 and AC3021, plus a new DHCP discovery
   address (ported from upstream).
 - `loggers` declared in `manifest.json`.
-- Exhaustive pytest suite (~91% coverage).
+- Exhaustive pytest suite (99% coverage), enforced by a CI gate.
+- Complete CI/CD: ruff, strict `mypy`, hassfest, HACS, Dependabot, issue/PR templates.
+- Repair issue raised when a device stays unreachable, cleared once it reconnects.
+- Translatable command-failure exceptions and a `fr` translation for them.
+- Strict typing: the integration now passes `mypy --strict`.
+- Documentation sections: removal, how data is updated, automation examples,
+  known limitations and use cases.
 
 ### Fixed
 - The network **scan flow never ran** (`async_show_progress` was missing its
