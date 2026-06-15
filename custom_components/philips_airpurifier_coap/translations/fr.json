@@ -3,7 +3,7 @@
     "abort": {
       "already_configured": "Appareil déjà configuré",
       "device_not_found": "Appareil sélectionné introuvable",
-      "model_unsupported": "Modèle non supporté",
+      "model_unsupported": "Modèle non pris en charge",
       "no_devices_found": "Aucun appareil Philips trouvé sur le réseau",
       "no_host": "Impossible de déterminer l'adresse IP de l'appareil",
       "reauth_different_device": "L'appareil à cette adresse est différent de l'appareil d'origine",
@@ -17,11 +17,11 @@
       "timeout": "Délai dépassé lors de la connexion à l'appareil"
     },
     "progress": {
-      "scanning": "Recherche des appareils Philips sur le réseau..."
+      "scanning": "Recherche des appareils Philips sur le réseau…"
     },
     "step": {
       "confirm": {
-        "description": "Voulez-vous configurer {model} {name} ?"
+        "description": "Voulez-vous configurer {model} {name} ?"
       },
       "manual": {
         "data": {
@@ -326,7 +326,7 @@
   },
   "issues": {
     "device_unreachable": {
-      "description": "Home Assistant ne parvient plus à joindre l'appareil Philips à l'adresse {host} et tente de se reconnecter. Vérifiez qu'il est allumé et accessible sur le réseau ; si son adresse IP a changé, reconfigurez ou rajoutez l'intégration. Un redémarrage de l'appareil aide souvent.",
+      "description": "Home Assistant ne parvient plus à joindre l'appareil Philips à l'adresse {host} et tente de se reconnecter. Vérifiez qu'il est allumé et accessible sur le réseau ; si son adresse IP a changé, reconfigurez ou rajoutez l'intégration. Un redémarrage de l'appareil aide souvent.",
       "title": "L'appareil Philips à {host} est injoignable"
     }
   },
