@@ -1,7 +1,7 @@
 {
   "domain": "philips_airpurifier_coap",
   "name": "Philips AirPurifier (with CoAP)",
-  "codeowners": ["@kongo09"],
+  "codeowners": ["@foXaCe"],
   "config_flow": true,
   "dependencies": ["frontend", "http", "ssdp"],
   "dhcp": [
@@ -27,10 +27,10 @@
       "registered_devices": true
     }
   ],
-  "documentation": "https://github.com/kongo09/philips-airpurifier-coap",
+  "documentation": "https://github.com/foXaCe/philips-airpurifier-coap",
   "integration_type": "device",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/kongo09/philips-airpurifier-coap/issues",
+  "issue_tracker": "https://github.com/foXaCe/philips-airpurifier-coap/issues",
   "loggers": ["aioairctrl", "coap", "getmac"],
   "requirements": ["aioairctrl==0.2.5", "getmac==0.9.5"],
   "ssdp": [
