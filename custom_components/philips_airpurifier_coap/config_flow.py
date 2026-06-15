@@ -79,10 +79,10 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._device_id: str | None = None
         self._wifi_version: Any = None
         self._status: Any = None
-        self._discovered_devices: list[dict] = []
-        self._scan_task: asyncio.Task | None = None
+        self._discovered_devices: list[dict[str, Any]] = []
+        self._scan_task: asyncio.Task[None] | None = None
 
-    def _get_schema(self, user_input):
+    def _get_schema(self, user_input: dict[str, Any]) -> vol.Schema:
         """Provide schema for user input."""
         return vol.Schema(
             {vol.Required(CONF_HOST, default=user_input.get(CONF_HOST, "")): cv.string}
@@ -101,7 +101,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.warning("Model %s of family %s not supported", model, model_family)
         return None
 
-    async def _fetch_device_status(self) -> dict:
+    async def _fetch_device_status(self) -> dict[str, Any]:
         """Create CoAP client and fetch device status."""
         client = None
         timeout = TimeoutManager()
@@ -116,7 +116,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 status, _ = await client.get_status()
                 _LOGGER.debug("got status")
 
-            return status
+            return cast(dict[str, Any], status)
         finally:
             if client is not None:
                 await client.shutdown()
@@ -201,7 +201,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.debug("waiting for async_step_confirm")
         return await self.async_step_confirm()
 
-    def _extract_device_info(self, status: dict) -> None:
+    def _extract_device_info(self, status: dict[str, Any]) -> None:
         """Extract device information from status."""
         self._model = extract_model(status)
         self._wifi_version = status.get(PhilipsApi.WIFI_VERSION)

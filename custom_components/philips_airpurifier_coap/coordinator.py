@@ -12,6 +12,7 @@ from aioairctrl import CoAPClient
 
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -83,6 +84,7 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
     async def async_shutdown(self) -> None:
         """Cancel all background work and close the client."""
         self._cancel_watchdog_if_needed()
+        self._async_delete_unreachable_issue()
 
         if self._observe_task is not None:
             self._observe_task.cancel()
@@ -192,9 +194,29 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
         except Exception as ex:  # noqa: BLE001 - retry on any connection failure
             _LOGGER.warning("Reconnect to host %s failed: %s", self.host, ex)
             self.async_set_update_error(ex)
+            self._async_create_unreachable_issue()
             # Try again after the watchdog interval.
             self._arm_watchdog()
             return
 
         _LOGGER.debug("Reconnected to host %s", self.host)
+        self._async_delete_unreachable_issue()
         self._start_observing()
+
+    @callback
+    def _async_create_unreachable_issue(self) -> None:
+        """Raise a repair issue while the device stays unreachable."""
+        ir.async_create_issue(
+            self.hass,
+            DOMAIN,
+            f"device_unreachable_{self.host}",
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="device_unreachable",
+            translation_placeholders={"host": self.host},
+        )
+
+    @callback
+    def _async_delete_unreachable_issue(self) -> None:
+        """Clear the unreachable repair issue once the device responds again."""
+        ir.async_delete_issue(self.hass, DOMAIN, f"device_unreachable_{self.host}")

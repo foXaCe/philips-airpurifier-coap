@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import socket
+from typing import Any, cast
 
 from aioairctrl import CoAPClient
 
@@ -13,16 +14,16 @@ from .const import PhilipsApi
 _LOGGER = logging.getLogger(__name__)
 
 
-def extract_name(status: dict) -> str:
+def extract_name(status: dict[str, Any]) -> str:
     """Extract the name from the status."""
     for name_key in [PhilipsApi.NAME, PhilipsApi.NEW_NAME, PhilipsApi.NEW2_NAME]:
         name = status.get(name_key)
         if name:
-            return name
+            return cast(str, name)
     return ""
 
 
-def extract_model(status: dict) -> str:
+def extract_model(status: dict[str, Any]) -> str:
     """Extract the model from the status."""
     for model_key in [
         PhilipsApi.MODEL_ID,
@@ -31,7 +32,7 @@ def extract_model(status: dict) -> str:
     ]:
         model = status.get(model_key)
         if model:
-            return model[:9]
+            return cast(str, model[:9])
     return ""
 
 
@@ -42,7 +43,7 @@ def get_local_ip() -> str | None:
         sock.connect(("8.8.8.8", 80))
         local_ip = sock.getsockname()[0]
         sock.close()
-        return local_ip
+        return cast(str, local_ip)
     except Exception:
         return None
 
@@ -91,7 +92,7 @@ async def _check_single_ip(
     ip: str,
     semaphore: asyncio.Semaphore,
     timeout: float,
-) -> dict | None:
+) -> dict[str, Any] | None:
     """Check a single IP for a Philips device."""
     async with semaphore:
         client = None
@@ -119,7 +120,7 @@ async def _check_single_ip(
         return None
 
 
-async def scan_for_devices(timeout: float = 8.0) -> list[dict]:
+async def scan_for_devices(timeout: float = 8.0) -> list[dict[str, Any]]:
     """Scan the local network for Philips air purifiers.
 
     Optimized scan strategy:

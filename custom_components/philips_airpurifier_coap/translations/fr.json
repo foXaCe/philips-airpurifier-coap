@@ -319,6 +319,17 @@
       }
     }
   },
+  "exceptions": {
+    "command_failed": {
+      "message": "Échec de l'envoi de la commande à {name}."
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "description": "Home Assistant ne parvient plus à joindre l'appareil Philips à l'adresse {host} et tente de se reconnecter. Vérifiez qu'il est allumé et accessible sur le réseau ; si son adresse IP a changé, reconfigurez ou rajoutez l'intégration. Un redémarrage de l'appareil aide souvent.",
+      "title": "L'appareil Philips à {host} est injoignable"
+    }
+  },
   "options": {
     "step": {
       "init": {

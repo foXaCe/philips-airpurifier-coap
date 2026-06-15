@@ -397,6 +397,31 @@ async def test_reconnect_propagates_cancellation(hass: HomeAssistant) -> None:
     await coord.async_shutdown()
 
 
+async def test_repair_issue_lifecycle(hass: HomeAssistant) -> None:
+    """A failing reconnect raises a repair issue; a recovery clears it."""
+    import homeassistant.helpers.issue_registry as ir
+
+    coord = Coordinator(hass, FakeClient({"pwr": "1"}), "9.9.9.9", {"pwr": "1"})
+    issue_id = "device_unreachable_9.9.9.9"
+    registry = ir.async_get(hass)
+
+    with patch(
+        "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+        AsyncMock(side_effect=OSError("boom")),
+    ):
+        await coord._async_reconnect()
+    assert registry.async_get_issue(DOMAIN, issue_id) is not None
+
+    with patch(
+        "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+        AsyncMock(return_value=FakeClient({"pwr": "1"})),
+    ):
+        await coord._async_reconnect()
+    assert registry.async_get_issue(DOMAIN, issue_id) is None
+
+    await coord.async_shutdown()
+
+
 # --------------------------------------------------------------------------- #
 # binary_sensor.py
 # --------------------------------------------------------------------------- #

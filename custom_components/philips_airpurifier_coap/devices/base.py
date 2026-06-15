@@ -89,7 +89,9 @@ class PhilipsEntity(CoordinatorEntity[Coordinator]):
             await self.coordinator.client.set_control_value(key, value)
         except Exception as ex:  # noqa: BLE001 - surface any client error to the user
             raise HomeAssistantError(
-                f"Failed to send command to {self.config_entry_data.device_information.name}"
+                translation_domain=DOMAIN,
+                translation_key="command_failed",
+                translation_placeholders={"name": self.config_entry_data.device_information.name},
             ) from ex
         self._device_status[key] = value
         self._handle_coordinator_update()
@@ -100,7 +102,9 @@ class PhilipsEntity(CoordinatorEntity[Coordinator]):
             await self.coordinator.client.set_control_values(data=data)
         except Exception as ex:  # noqa: BLE001 - surface any client error to the user
             raise HomeAssistantError(
-                f"Failed to send command to {self.config_entry_data.device_information.name}"
+                translation_domain=DOMAIN,
+                translation_key="command_failed",
+                translation_placeholders={"name": self.config_entry_data.device_information.name},
             ) from ex
         self._device_status.update(data)
         self._handle_coordinator_update()
@@ -133,8 +137,8 @@ class PhilipsGenericControlBase(PhilipsEntity):
         self._available_preset_modes: dict[str, dict[str, Any]] = {}
         self._collect_available_preset_modes()
 
-    def _collect_available_attributes(self):
-        attributes = []
+    def _collect_available_attributes(self) -> None:
+        attributes: list[tuple[Any, ...]] = []
 
         for cls in reversed(self.__class__.__mro__):
             cls_attributes = getattr(cls, "AVAILABLE_ATTRIBUTES", [])
@@ -142,8 +146,8 @@ class PhilipsGenericControlBase(PhilipsEntity):
 
         self._available_attributes = attributes
 
-    def _collect_available_preset_modes(self):
-        preset_modes = {}
+    def _collect_available_preset_modes(self) -> None:
+        preset_modes: dict[str, dict[str, Any]] = {}
 
         for cls in reversed(self.__class__.__mro__):
             cls_preset_modes = getattr(cls, "AVAILABLE_PRESET_MODES", {})
@@ -157,11 +161,11 @@ class PhilipsGenericControlBase(PhilipsEntity):
         """Return the extra state attributes."""
 
         def append(
-            attributes: dict,
+            attributes: dict[str, Any],
             key: str,
             philips_key: str,
-            value_map: dict | Callable[[Any, Any], Any] | None = None,
-        ):
+            value_map: dict[Any, Any] | Callable[[Any, Any], Any] | None = None,
+        ) -> None:
             # some philips keys are not unique, so # serves as a marker and needs to be filtered out
             philips_clean_key = philips_key.partition("#")[0]
 
@@ -234,8 +238,8 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
         if self.KEY_OSCILLATION is not None:
             self._attr_supported_features |= FanEntityFeature.OSCILLATE
 
-    def _collect_available_speeds(self):
-        speeds = {}
+    def _collect_available_speeds(self) -> None:
+        speeds: dict[str, dict[str, Any]] = {}
 
         for cls in reversed(self.__class__.__mro__):
             cls_speeds = getattr(cls, "AVAILABLE_SPEEDS", {})
@@ -251,14 +255,14 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
     def is_on(self) -> bool:
         """Return if the fan is on."""
         status = self._device_status.get(self.KEY_PHILIPS_POWER)
-        return status == self.STATE_POWER_ON
+        return bool(status == self.STATE_POWER_ON)
 
     async def async_turn_on(
         self,
         percentage: int | None = None,
         preset_mode: str | None = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """Turn the fan on."""
 
         if preset_mode:
@@ -271,7 +275,7 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
 
         await self._async_set_control_value(self.KEY_PHILIPS_POWER, self.STATE_POWER_ON)
 
-    async def async_turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the fan off."""
         await self._async_set_control_value(self.KEY_PHILIPS_POWER, self.STATE_POWER_OFF)
 
@@ -327,7 +331,7 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
         if status is None:
             return None
 
-        return status != off
+        return bool(status != off)
 
     async def async_oscillate(self, oscillating: bool) -> None:
         """Osciallate the fan."""

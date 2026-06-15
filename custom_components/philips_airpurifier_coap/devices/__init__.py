@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ..const import FanModel
 from .base import (
     PhilipsEntity,
@@ -151,9 +153,9 @@ model_to_class: dict[str, type[PhilipsGenericFanBase]] = {
 }
 
 
-def collect_class_attribute(model_class: type, attribute: str) -> list:
+def collect_class_attribute(model_class: type, attribute: str) -> list[Any]:
     """Collect a list-valued class attribute across the MRO (base to leaf)."""
-    collected: list = []
+    collected: list[Any] = []
     for cls in reversed(model_class.__mro__):
         collected.extend(getattr(cls, attribute, []))
     return collected

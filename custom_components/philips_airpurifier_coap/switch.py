@@ -129,7 +129,9 @@ class PhilipsSwitch(PhilipsEntity, SwitchEntity):
         """Return True if the switch is on."""
         if self.entity_description.key not in self._device_status:
             return None
-        return self._device_status[self.entity_description.key] != self.entity_description.off_value
+        return bool(
+            self._device_status[self.entity_description.key] != self.entity_description.off_value
+        )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""

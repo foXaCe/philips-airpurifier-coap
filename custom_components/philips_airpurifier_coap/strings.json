@@ -332,5 +332,16 @@
         "name": "Target temperature"
       }
     }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "Failed to send the command to {name}."
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "title": "Philips device at {host} is unreachable",
+      "description": "Home Assistant can no longer reach the Philips device at {host} and keeps trying to reconnect. Check that the device is powered on and reachable on the network; if its IP address changed, reconfigure or re-add the integration. A power-cycle of the device often helps."
+    }
   }
 }

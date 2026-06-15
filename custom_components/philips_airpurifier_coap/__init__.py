@@ -9,7 +9,7 @@ import json
 import logging
 from os import walk
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from aioairctrl import CoAPClient
 from getmac import get_mac_address
@@ -22,6 +22,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.device_registry import format_mac
+from homeassistant.helpers.typing import ConfigType
 
 from .config_entry_data import ConfigEntryData
 from .const import (
@@ -69,18 +70,18 @@ class ListingView(HomeAssistantView):
 
     requires_auth = False
 
-    def __init__(self, url, iconpath, hass: HomeAssistant) -> None:
+    def __init__(self, url: str, iconpath: str, hass: HomeAssistant) -> None:
         """Initialize the ListingView with a URL and icon path."""
         self.url = url
         self.iconpath = iconpath
         self.name = "Icon Listing"
         self.hass = hass
 
-    async def get(self, request, *args):
+    async def get(self, request: Any, *args: Any) -> str:
         """Call executor to avoid blocking I/O call to get list of used icons."""
         return await self.hass.async_add_executor_job(self.get_icons_list, self.iconpath)
 
-    def get_icons_list(self, iconpath):
+    def get_icons_list(self, iconpath: str) -> str:
         """Handle GET request to provide a JSON list of the used icons."""
         icons = []
         for dirpath, _dirnames, filenames in walk(iconpath):
@@ -94,7 +95,7 @@ class ListingView(HomeAssistantView):
         return json.dumps(icons)
 
 
-async def async_setup(hass: HomeAssistant, config) -> bool:
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the icons for the Philips AirPurifier integration."""
     _LOGGER.debug("async_setup called")
 

@@ -6,7 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -61,7 +61,7 @@ def _icon_from_map(value: Any, icon_map: IconMap | None) -> str | None:
 class PhilipsSensorEntityDescription(SensorEntityDescription):
     """Describe a Philips sensor entity."""
 
-    value_fn: Callable[[Any, dict], StateType] | None = None
+    value_fn: Callable[[Any, dict[str, Any]], StateType] | None = None
     icon_map: IconMap | None = None
 
 
@@ -318,7 +318,7 @@ class PhilipsSensor(PhilipsEntity, SensorEntity):
             return None
         if self.entity_description.value_fn is not None:
             return self.entity_description.value_fn(value, self._device_status)
-        return value
+        return cast(StateType, value)
 
     @property
     def icon(self) -> str | None:
@@ -389,11 +389,11 @@ class PhilipsFilterSensor(PhilipsEntity, SensorEntity):
 
     @property
     def _value(self) -> int:
-        return self._device_status[self._value_key]
+        return cast(int, self._device_status[self._value_key])
 
     @property
     def _total(self) -> int:
-        return self._device_status[self._total_key]
+        return cast(int, self._device_status[self._total_key])
 
     @property
     def icon(self) -> str | None:

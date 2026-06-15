@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from datetime import timedelta
 import logging
+from typing import Any
 
 from homeassistant.util.percentage import percentage_to_ordered_list_item
 
@@ -133,8 +134,8 @@ class PhilipsAC1214(PhilipsGenericFan):
         self,
         percentage: int | None = None,
         preset_mode: str | None = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """Turn on the device."""
         _LOGGER.debug(
             "AC1214 async_turn_on called with percentage=%s and preset_mode=%s",
