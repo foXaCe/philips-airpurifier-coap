@@ -133,7 +133,8 @@ async def scan_for_devices(timeout: float = 8.0) -> list[dict[str, Any]]:
     logging.getLogger("coap").setLevel(logging.ERROR)
     logging.getLogger("aioairctrl").setLevel(logging.WARNING)
 
-    local_ip = get_local_ip()
+    loop = asyncio.get_running_loop()
+    local_ip = await loop.run_in_executor(None, get_local_ip)
     if not local_ip:
         _LOGGER.warning("Could not determine local IP address")
         return []
@@ -144,7 +145,7 @@ async def scan_for_devices(timeout: float = 8.0) -> list[dict[str, Any]]:
     await ping_sweep(network_prefix)
 
     # Step 2: First try ARP IPs only (fast scan)
-    arp_ips = get_active_ips_from_arp()
+    arp_ips = await loop.run_in_executor(None, get_active_ips_from_arp)
     arp_ips = [ip for ip in arp_ips if ip.startswith(network_prefix + ".")]
 
     found_devices = []
