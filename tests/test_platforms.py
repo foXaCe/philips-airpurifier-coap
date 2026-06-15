@@ -180,6 +180,23 @@ async def test_climate_setup_and_temperature_guard(hass: HomeAssistant, make_run
     runtime.client.set_control_value.assert_not_called()
 
 
+async def test_climate_heating_action(hass: HomeAssistant, make_runtime) -> None:
+    """A CX heater collects its heating-action key and reports hvac_action."""
+    from homeassistant.components.climate import HVACAction
+
+    status = _status(
+        **{
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_TARGET_TEMP: 21,
+            PhilipsApi.NEW2_HEATING_ACTION: -16,
+        }
+    )
+    entities, _ = await _setup(hass, make_runtime, climate, "CX5120", status)
+    heater = entities[0]
+    assert heater._heating_action_key == PhilipsApi.NEW2_HEATING_ACTION
+    assert heater.hvac_action == HVACAction.IDLE
+
+
 # --------------------------------------------------------------------------- #
 # humidifier
 # --------------------------------------------------------------------------- #

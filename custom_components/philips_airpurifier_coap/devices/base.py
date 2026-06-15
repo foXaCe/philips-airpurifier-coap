@@ -211,6 +211,7 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
     STATE_POWER_OFF: Any = "0"
 
     KEY_OSCILLATION: dict[str, Any] | None = None
+    KEY_HEATING_ACTION: str | None = None
 
     def __init__(
         self,

@@ -24,6 +24,8 @@ automations and history are preserved.
 - Options flow to configure the filter-alert threshold per config entry.
 - Support for AC2210, AC2220, AC2221 and AC3021, plus a new DHCP discovery
   address (ported from upstream).
+- HVAC action and a detailed `heating_action` attribute for the CX3120/CX5120
+  fan heaters (ported from upstream).
 - `loggers` declared in `manifest.json`.
 - Exhaustive pytest suite (99% coverage), enforced by a CI gate.
 - Complete CI/CD: ruff, strict `mypy`, hassfest, HACS, Dependabot, issue/PR templates.
@@ -46,6 +48,9 @@ automations and history are preserved.
 - Device actions now raise `HomeAssistantError` on client failure.
 - AC0950/AC0951 and AC3420/AC3421 fan presets, and the icon listing view
   (ported from upstream).
+- CoAP now works on IPv4-only networks (forces the aiocoap `simple6` transport
+  at import; ported from upstream).
+- CX5120 oscillation used the wrong "D" value for the 5k series (ported from upstream).
 
 ### Removed
 - Dead code: `timer.py`, unused constants (`TEST_ON`, `DATA_KEY_*`, `FanUnits`, …) and

@@ -36,7 +36,7 @@ from custom_components.philips_airpurifier_coap.const import (
     PresetMode,
 )
 from custom_components.philips_airpurifier_coap.coordinator import Coordinator
-from homeassistant.components.climate import SWING_OFF, SWING_ON, HVACMode
+from homeassistant.components.climate import SWING_OFF, SWING_ON, HVACAction, HVACMode
 from homeassistant.components.light import EFFECT_OFF
 from homeassistant.config_entries import (
     SOURCE_SSDP,
@@ -231,6 +231,14 @@ async def test_unload_when_platforms_fail(hass: HomeAssistant, bypass_integratio
     # The coordinator was not shut down because unload failed.
     client.shutdown.assert_not_awaited()
     await entry.runtime_data.coordinator.async_shutdown()
+
+
+def test_aiocoap_transport_env_set() -> None:
+    """Importing the integration forces the simple6 aiocoap transport (IPv4-only fix)."""
+    import os
+
+    assert os.environ["AIOCOAP_CLIENT_TRANSPORT"] == "simple6"
+    assert os.environ["AIOCOAP_SERVER_TRANSPORT"] == "simple6"
 
 
 # --------------------------------------------------------------------------- #
@@ -806,6 +814,39 @@ async def test_climate_swing_with_oscillation(hass: HomeAssistant, make_runtime)
     runtime.client.set_control_value.reset_mock()
     await heater.async_set_swing_mode("invalid")  # not a swing mode -> no-op
     runtime.client.set_control_value.assert_not_awaited()
+
+
+async def test_climate_hvac_action(hass: HomeAssistant, make_runtime) -> None:
+    """hvac_action maps the raw heating-action value onto an HVACAction."""
+    desc = climate.HEATER_TYPES[0]
+    key = PhilipsApi.NEW2_HEATING_ACTION
+
+    def _action(status, heating_key=key):
+        heater, _ = _build(
+            climate.PhilipsHeater,
+            hass,
+            make_runtime,
+            status,
+            desc,
+            {},  # presets
+            {},  # oscillation
+            heating_key,
+            model="CX5120",
+        )
+        return heater.hvac_action
+
+    on = {PhilipsApi.NEW2_POWER: 1}
+    # No heating-action key -> the capability is absent.
+    assert _action({**on, key: 65}, None) is None
+    # Off -> OFF regardless of the reported value.
+    assert _action({PhilipsApi.NEW2_POWER: 0, key: 65}) == HVACAction.OFF
+    # Mapped values.
+    assert _action({**on, key: 65}) == HVACAction.HEATING
+    assert _action({**on, key: -16}) == HVACAction.IDLE
+    assert _action({**on, key: 0}) == HVACAction.FAN
+    # An unmapped value and an absent value both fall back to HEATING.
+    assert _action({**on, key: 99}) == HVACAction.HEATING
+    assert _action(on) == HVACAction.HEATING
 
 
 # --------------------------------------------------------------------------- #

@@ -6,7 +6,13 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from custom_components.philips_airpurifier_coap.const import ICON, PhilipsApi, PresetMode
+from custom_components.philips_airpurifier_coap.const import (
+    ICON,
+    FanAttributes,
+    HeatingAction,
+    PhilipsApi,
+    PresetMode,
+)
 from custom_components.philips_airpurifier_coap.devices import model_to_class
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
@@ -82,6 +88,26 @@ async def test_fan_oscillation_unknown_status(hass: HomeAssistant, make_runtime)
     """A fan with an oscillation key but no value reports None."""
     fan, _ = _fan(hass, make_runtime, "CX5120", {PhilipsApi.NEW2_POWER: 1})
     assert fan.oscillating is None
+
+
+async def test_cx5120_oscillation_value(hass: HomeAssistant, make_runtime) -> None:
+    """CX5120 oscillation uses the 5k-series 'D' value (17222)."""
+    fan, runtime = _fan(
+        hass, make_runtime, "CX5120", {PhilipsApi.NEW2_POWER: 1, PhilipsApi.NEW2_OSCILLATION: 0}
+    )
+    await fan.async_oscillate(True)
+    runtime.client.set_control_value.assert_awaited_with(PhilipsApi.NEW2_OSCILLATION, 17222)
+
+
+async def test_cx_heating_action_attribute(hass: HomeAssistant, make_runtime) -> None:
+    """A CX heater fan exposes the detailed heating action as an extra attribute."""
+    fan, _ = _fan(
+        hass,
+        make_runtime,
+        "CX5120",
+        {PhilipsApi.NEW2_POWER: 1, PhilipsApi.NEW2_HEATING_ACTION: 65},
+    )
+    assert fan.extra_state_attributes[FanAttributes.HEATING_ACTION] == HeatingAction.STRONG
 
 
 async def test_fan_extra_attributes(hass: HomeAssistant, make_runtime) -> None:

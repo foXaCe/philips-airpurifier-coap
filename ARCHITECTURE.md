@@ -78,7 +78,8 @@ of these requires `async_migrate_entry` + a `ConfigEntry.version` bump.
 
 1. Add the model string to `FanModel` in `const.py`.
 2. Add a class in the right `devices/<generation>.py`, inheriting the closest base, and
-   declare its `AVAILABLE_*` attributes (and `KEY_OSCILLATION`, `CREATE_FAN`, etc.).
+   declare its `AVAILABLE_*` attributes (and `KEY_OSCILLATION`, `KEY_HEATING_ACTION`,
+   `CREATE_FAN`, etc.).
 3. Register it in `model_to_class` (`devices/__init__.py`).
 4. Add any new `PhilipsApi` field names to `const.py` and a matching `EntityDescription`
    in the relevant platform file if the feature is new.

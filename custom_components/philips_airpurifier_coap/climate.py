@@ -12,6 +12,7 @@ from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityDescription,
     ClimateEntityFeature,
+    HVACAction,
     HVACMode,
 )
 from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
@@ -30,6 +31,16 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 PARALLEL_UPDATES = 0
+
+# Raw heating-action value (PhilipsApi.NEW2_HEATING_ACTION) -> HVACAction.
+# The matching raw -> HeatingAction map for the fan attribute lives in const.py.
+HEATING_ACTION_MAP: dict[int, HVACAction] = {
+    65: HVACAction.HEATING,
+    67: HVACAction.HEATING,
+    68: HVACAction.HEATING,
+    -16: HVACAction.IDLE,
+    0: HVACAction.FAN,
+}
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -76,11 +87,15 @@ async def async_setup_entry(
     available_heaters = collect_class_attribute(model_class, "AVAILABLE_HEATERS")
     available_preset_modes: dict[str, Any] = {}
     available_oscillation: dict[str, Any] = {}
+    heating_action_key: str | None = None
     for cls in reversed(model_class.__mro__):
         available_preset_modes.update(getattr(cls, "AVAILABLE_PRESET_MODES", {}))
         oscillation = getattr(cls, "KEY_OSCILLATION", None)
         if oscillation:
             available_oscillation.update(oscillation)
+        heating_action = getattr(cls, "KEY_HEATING_ACTION", None)
+        if heating_action:
+            heating_action_key = heating_action
 
     async_add_entities(
         PhilipsHeater(
@@ -90,6 +105,7 @@ async def async_setup_entry(
             description,
             available_preset_modes,
             available_oscillation,
+            heating_action_key,
         )
         for description in HEATER_TYPES
         if description.key in available_heaters
@@ -111,6 +127,7 @@ class PhilipsHeater(PhilipsGenericControlBase, ClimateEntity):
         description: PhilipsHeaterEntityDescription,
         available_preset_modes: dict[str, Any],
         available_oscillation: dict[str, Any],
+        heating_action_key: str | None = None,
     ) -> None:
         """Initialize the fan heater."""
         super().__init__(hass, config, config_entry_data)
@@ -149,6 +166,8 @@ class PhilipsHeater(PhilipsGenericControlBase, ClimateEntity):
             self._attr_supported_features |= ClimateEntityFeature.SWING_MODE
             self._attr_swing_modes = [SWING_ON, SWING_OFF]
 
+        self._heating_action_key = heating_action_key
+
     @property
     def target_temperature(self) -> float | None:
         """Return the target temperature."""
@@ -158,6 +177,18 @@ class PhilipsHeater(PhilipsGenericControlBase, ClimateEntity):
     def current_temperature(self) -> float | None:
         """Return the current temperature."""
         return self._device_status.get(self._current_temperature_key)
+
+    @property
+    def hvac_action(self) -> HVACAction | None:
+        """Return the current HVAC action reported by the heater."""
+        if self._heating_action_key is None:
+            return None
+        if not self.is_on:
+            return HVACAction.OFF
+        value = self._device_status.get(self._heating_action_key)
+        if value is None:
+            return HVACAction.HEATING
+        return HEATING_ACTION_MAP.get(value, HVACAction.HEATING)
 
     @property
     def hvac_mode(self) -> HVACMode:

@@ -7,6 +7,7 @@ from functools import partial
 from ipaddress import IPv6Address, ip_address
 import json
 import logging
+import os
 from os import walk
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -44,6 +45,13 @@ if TYPE_CHECKING:
     from .const import PhilipsConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
+
+# Force aiocoap to use the simple6 transport so CoAP also works on IPv4-only hosts.
+# aiocoap reads these when it creates a context, so setting them here — at integration
+# import, before any CoAPClient is created — covers both the config-flow network scan
+# and the runtime connection. See https://github.com/kongo09/philips-airpurifier-coap/issues/256
+os.environ.setdefault("AIOCOAP_CLIENT_TRANSPORT", "simple6")
+os.environ.setdefault("AIOCOAP_SERVER_TRANSPORT", "simple6")
 
 
 PLATFORMS = [

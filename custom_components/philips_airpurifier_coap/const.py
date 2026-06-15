@@ -215,6 +215,17 @@ class FanFunction(StrEnum):
     CIRCULATION = "circulation"
 
 
+class HeatingAction(StrEnum):
+    """The detailed heating action reported by a heater (extra state attribute)."""
+
+    STRONG = "strong"
+    MEDIUM = "medium"
+    LOW = "low"
+    IDLE = "idle"
+    FAN = "fan"
+    OFF = "off"
+
+
 CONF_FILTER_ALERT_THRESHOLD = "filter_alert_threshold"
 DEFAULT_FILTER_ALERT_THRESHOLD = 10  # Percentage below which a filter needs attention
 
@@ -285,6 +296,7 @@ class FanAttributes(StrEnum):
     SWING = "swing"
     TURBO = "turbo"
     OSCILLATION = "oscillation"
+    HEATING_ACTION = "heating_action"
     VALUE_LIST = "value_list"
     ON = "on"
     OFF = "off"
@@ -379,6 +391,11 @@ class PhilipsApi:
         SWITCH_ON: 45,
         SWITCH_OFF: 0,
     }
+    # The 5k series heaters (e.g. CX5120) use this "D" oscillation value.
+    OSCILLATION_MAP4 = {
+        SWITCH_ON: 17222,
+        SWITCH_OFF: 0,
+    }
 
     # the AC1715 seems to follow a new scheme, this should later be refactored
     NEW_NAME = "D01-03"
@@ -433,6 +450,7 @@ class PhilipsApi:
     NEW2_QUICKDRY_MODE = "D03139"
     NEW2_REMAINING_TIME = "D03211"
     NEW2_TARGET_TEMP = "D0310E"
+    NEW2_HEATING_ACTION = "D0313F"
     NEW2_STANDBY_SENSORS = "D03134"
     NEW2_AUTO_PLUS_AI = "D03180"
     NEW2_PREFERRED_INDEX = "D0312A#1"
@@ -488,6 +506,15 @@ class PhilipsApi:
         1: FanFunction.FAN,
         2: FanFunction.CIRCULATION,
         3: FanFunction.HEATING,
+    }
+    # Raw heating-action value -> HeatingAction, for the fan's extra state attribute.
+    # The matching raw -> HVACAction map for the climate entity lives in climate.py.
+    HEATING_ACTION_MAP2 = {
+        65: HeatingAction.STRONG,
+        67: HeatingAction.MEDIUM,
+        68: HeatingAction.LOW,
+        -16: HeatingAction.IDLE,
+        0: HeatingAction.FAN,
     }
     TIMER_MAP = {
         0: "Off",

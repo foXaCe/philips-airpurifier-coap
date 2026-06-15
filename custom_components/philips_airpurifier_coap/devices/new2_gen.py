@@ -447,6 +447,15 @@ class PhilipsAMF870(PhilipsAMFxxx):
 class PhilipsCX3120(PhilipsNew2GenericFan):
     """CX3120."""
 
+    AVAILABLE_ATTRIBUTES = [
+        # expose the detailed heating state as an extra state attribute
+        (
+            FanAttributes.HEATING_ACTION,
+            PhilipsApi.NEW2_HEATING_ACTION,
+            PhilipsApi.HEATING_ACTION_MAP2,
+        ),
+    ]
+
     AVAILABLE_PRESET_MODES = {
         PresetMode.AUTO_PLUS: {
             PhilipsApi.NEW2_POWER: 1,
@@ -494,6 +503,7 @@ class PhilipsCX3120(PhilipsNew2GenericFan):
     KEY_OSCILLATION = {
         PhilipsApi.NEW2_OSCILLATION: PhilipsApi.OSCILLATION_MAP3,
     }
+    KEY_HEATING_ACTION = PhilipsApi.NEW2_HEATING_ACTION
 
     UNAVAILABLE_SENSORS = [PhilipsApi.NEW2_FAN_SPEED, PhilipsApi.NEW2_GAS]
     AVAILABLE_SELECTS = [PhilipsApi.NEW2_TIMER2]
@@ -506,6 +516,15 @@ class PhilipsCX3120(PhilipsNew2GenericFan):
 
 class PhilipsCX5120(PhilipsNew2GenericFan):
     """CX5120."""
+
+    AVAILABLE_ATTRIBUTES = [
+        # expose the detailed heating state as an extra state attribute
+        (
+            FanAttributes.HEATING_ACTION,
+            PhilipsApi.NEW2_HEATING_ACTION,
+            PhilipsApi.HEATING_ACTION_MAP2,
+        ),
+    ]
 
     AVAILABLE_PRESET_MODES = {
         PresetMode.AUTO: {
@@ -542,8 +561,9 @@ class PhilipsCX5120(PhilipsNew2GenericFan):
         },
     }
     KEY_OSCILLATION = {
-        PhilipsApi.NEW2_OSCILLATION: PhilipsApi.OSCILLATION_MAP2,
+        PhilipsApi.NEW2_OSCILLATION: PhilipsApi.OSCILLATION_MAP4,
     }
+    KEY_HEATING_ACTION = PhilipsApi.NEW2_HEATING_ACTION
 
     AVAILABLE_LIGHTS = [PhilipsApi.NEW2_DISPLAY_BACKLIGHT2]
     AVAILABLE_SWITCHES = [PhilipsApi.NEW2_BEEP]
