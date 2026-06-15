@@ -26,6 +26,10 @@ automations and history are preserved.
   address (ported from upstream).
 - HVAC action and a detailed `heating_action` attribute for the CX3120/CX5120
   fan heaters (ported from upstream).
+- Logbook descriptions for the filter-alert event, attached to the originating
+  entity and rendered with the device name and filter percentage.
+- A `py.typed` marker so the package ships its type information (Platinum
+  strict-typing).
 - `loggers` declared in `manifest.json`.
 - Exhaustive pytest suite (99% coverage), enforced by a CI gate.
 - Complete CI/CD: ruff, strict `mypy`, hassfest, HACS, Dependabot, issue/PR templates.

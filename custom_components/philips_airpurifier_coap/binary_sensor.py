@@ -19,6 +19,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from .const import (
     CONF_FILTER_ALERT_THRESHOLD,
     DEFAULT_FILTER_ALERT_THRESHOLD,
+    EVENT_FILTER_ALERT,
     FanAttributes,
     PhilipsApi,
 )
@@ -34,8 +35,6 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 PARALLEL_UPDATES = 0
-
-EVENT_FILTER_ALERT = "philips_filter_alert"
 
 _FILTER_BY_KEY = {description.key: description for description in FILTER_TYPES}
 
@@ -232,6 +231,7 @@ class PhilipsFilterAlertSensor(PhilipsEntity, BinarySensorEntity):
                 self.hass.bus.fire(
                     EVENT_FILTER_ALERT,
                     {
+                        "entity_id": self.entity_id,
                         "device_id": device_info.device_id,
                         "device_name": device_info.name,
                         "filter_key": filter_key,

@@ -229,6 +229,9 @@ class HeatingAction(StrEnum):
 CONF_FILTER_ALERT_THRESHOLD = "filter_alert_threshold"
 DEFAULT_FILTER_ALERT_THRESHOLD = 10  # Percentage below which a filter needs attention
 
+# Bus event fired when a filter drops below the alert threshold (described in logbook.py).
+EVENT_FILTER_ALERT = "philips_filter_alert"
+
 
 class FanAttributes(StrEnum):
     """The attributes of a fan."""
