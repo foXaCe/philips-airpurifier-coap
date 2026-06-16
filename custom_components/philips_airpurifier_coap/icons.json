@@ -68,6 +68,8 @@
               "sleep_allergy": "pap:sleep_mode",
               "speed_1": "pap:speed_1",
               "speed_10": "pap:fan_speed_button",
+              "speed_11": "pap:fan_speed_button",
+              "speed_12": "pap:fan_speed_button",
               "speed_2": "pap:speed_2",
               "speed_3": "pap:speed_3",
               "speed_4": "pap:fan_speed_button",

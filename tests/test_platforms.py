@@ -206,6 +206,14 @@ async def test_select_current_option_none_when_unknown(hass: HomeAssistant, make
     assert pref.current_option is None
 
 
+async def test_select_unavailable_dedup(hass: HomeAssistant, make_runtime) -> None:
+    """AC4220 suppresses the inherited preferred-index select, keeping only the gas one."""
+    entities, _ = await _setup(hass, make_runtime, select, "AC4220")
+    keys = [e.entity_description.key for e in entities]
+    assert PhilipsApi.NEW2_PREFERRED_INDEX not in keys
+    assert PhilipsApi.NEW2_GAS_PREFERRED_INDEX in keys
+
+
 # --------------------------------------------------------------------------- #
 # climate
 # --------------------------------------------------------------------------- #

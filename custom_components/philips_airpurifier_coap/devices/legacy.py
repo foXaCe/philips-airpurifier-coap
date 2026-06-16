@@ -814,6 +814,10 @@ class PhilipsAC4236(PhilipsGenericFan):
     AVAILABLE_SELECTS = [PhilipsApi.PREFERRED_INDEX]
 
 
+class PhilipsAC4231(PhilipsAC4236):
+    """AC4231."""
+
+
 class PhilipsAC4558(PhilipsGenericFan):
     """AC4558."""
 

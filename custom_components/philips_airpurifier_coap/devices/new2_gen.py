@@ -350,6 +350,9 @@ class PhilipsAC4220(PhilipsAC32xx):
     """AC4220."""
 
     AVAILABLE_SELECTS = [PhilipsApi.NEW2_GAS_PREFERRED_INDEX]
+    # AC32xx exposes the plain preferred-index select; this gas model only wants
+    # the gas one, so suppress the inherited duplicate (ported from upstream #351).
+    UNAVAILABLE_SELECTS = [PhilipsApi.NEW2_PREFERRED_INDEX]
 
 
 class PhilipsAC4221(PhilipsAC4220):
@@ -638,6 +641,130 @@ class PhilipsCX3550(PhilipsNew2GenericFan):
     AVAILABLE_SELECTS = [PhilipsApi.NEW2_TIMER2]
 
 
+class PhilipsCX7550(PhilipsNew2GenericFan):
+    """CX7550."""
+
+    AVAILABLE_PRESET_MODES = {
+        PresetMode.LOW: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 1,
+            PhilipsApi.NEW2_MODE_C: 1,
+        },
+        PresetMode.MEDIUM: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 6,
+            PhilipsApi.NEW2_MODE_C: 6,
+        },
+        PresetMode.HIGH: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 82,
+            PhilipsApi.NEW2_MODE_C: 82,
+        },
+        PresetMode.NATURAL: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: -126,
+            PhilipsApi.NEW2_MODE_C: 1,
+        },
+        PresetMode.SLEEP: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 17,
+            PhilipsApi.NEW2_MODE_C: 2,
+        },
+        PresetMode.AUTO: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 0,
+            PhilipsApi.NEW2_MODE_C: 6,
+        },
+    }
+    AVAILABLE_SPEEDS = {
+        PresetMode.SPEED_1: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 1,
+            PhilipsApi.NEW2_MODE_C: 1,
+        },
+        PresetMode.SPEED_2: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 2,
+            PhilipsApi.NEW2_MODE_C: 2,
+        },
+        PresetMode.SPEED_3: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 3,
+            PhilipsApi.NEW2_MODE_C: 3,
+        },
+        PresetMode.SPEED_4: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 4,
+            PhilipsApi.NEW2_MODE_C: 4,
+        },
+        PresetMode.SPEED_5: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 5,
+            PhilipsApi.NEW2_MODE_C: 5,
+        },
+        PresetMode.SPEED_6: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 6,
+            PhilipsApi.NEW2_MODE_C: 6,
+        },
+        PresetMode.SPEED_7: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 7,
+            PhilipsApi.NEW2_MODE_C: 7,
+        },
+        PresetMode.SPEED_8: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 8,
+            PhilipsApi.NEW2_MODE_C: 8,
+        },
+        PresetMode.SPEED_9: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 9,
+            PhilipsApi.NEW2_MODE_C: 9,
+        },
+        PresetMode.SPEED_10: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 10,
+            PhilipsApi.NEW2_MODE_C: 10,
+        },
+        PresetMode.SPEED_11: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 81,
+            PhilipsApi.NEW2_MODE_C: 81,
+        },
+        PresetMode.SPEED_12: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_A: 1,
+            PhilipsApi.NEW2_MODE_B: 82,
+            PhilipsApi.NEW2_MODE_C: 82,
+        },
+    }
+    KEY_OSCILLATION = {
+        PhilipsApi.NEW2_OSCILLATION: PhilipsApi.OSCILLATION_MAP5,
+    }
+
+    AVAILABLE_LIGHTS = [PhilipsApi.NEW2_DISPLAY_BACKLIGHT4]
+    AVAILABLE_SWITCHES = [PhilipsApi.NEW2_BEEP]
+    AVAILABLE_SELECTS = [PhilipsApi.NEW2_TIMER2]
+
+
 class PhilipsHU1509(PhilipsNew2GenericFan):
     """HU1509."""
 
@@ -674,6 +801,40 @@ class PhilipsHU1509(PhilipsNew2GenericFan):
 
 class PhilipsHU1510(PhilipsHU1509):
     """HU1510."""
+
+
+class PhilipsHU4210(PhilipsNew2GenericFan):
+    """HU4210."""
+
+    CREATE_FAN = False
+
+    AVAILABLE_PRESET_MODES = {
+        PresetMode.AUTO: {
+            PhilipsApi.NEW2_POWER: 1,
+            PhilipsApi.NEW2_MODE_B: 0,
+        },
+        PresetMode.SLEEP: {PhilipsApi.NEW2_POWER: 1, PhilipsApi.NEW2_MODE_B: 17},
+        PresetMode.MEDIUM: {PhilipsApi.NEW2_POWER: 1, PhilipsApi.NEW2_MODE_B: 19},
+        PresetMode.HIGH: {PhilipsApi.NEW2_POWER: 1, PhilipsApi.NEW2_MODE_B: 65},
+    }
+    AVAILABLE_SPEEDS = {
+        PresetMode.SLEEP: {PhilipsApi.NEW2_POWER: 1, PhilipsApi.NEW2_MODE_B: 17},
+        PresetMode.MEDIUM: {PhilipsApi.NEW2_POWER: 1, PhilipsApi.NEW2_MODE_B: 19},
+        PresetMode.HIGH: {PhilipsApi.NEW2_POWER: 1, PhilipsApi.NEW2_MODE_B: 65},
+    }
+
+    AVAILABLE_SWITCHES = [
+        PhilipsApi.NEW2_BEEP,
+        PhilipsApi.NEW2_STANDBY_SENSORS,
+    ]
+    AVAILABLE_LIGHTS = [PhilipsApi.NEW2_DISPLAY_BACKLIGHT4]
+    AVAILABLE_SELECTS = [PhilipsApi.NEW2_TIMER2]
+    AVAILABLE_BINARY_SENSORS = [PhilipsApi.NEW2_ERROR_CODE]
+    AVAILABLE_HUMIDIFIERS = [PhilipsApi.NEW2_HUMIDITY_TARGET2]
+
+
+class PhilipsHU4209(PhilipsHU4210):
+    """HU4209 (same device family as the HU4210)."""
 
 
 class PhilipsHU5710(PhilipsNew2GenericFan):

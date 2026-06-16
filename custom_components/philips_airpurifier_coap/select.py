@@ -130,10 +130,11 @@ async def async_setup_entry(
         return
 
     available_selects = collect_class_attribute(model_class, "AVAILABLE_SELECTS")
+    unavailable_selects = collect_class_attribute(model_class, "UNAVAILABLE_SELECTS")
     async_add_entities(
         PhilipsSelect(hass, entry, config_entry_data, description)
         for description in SELECT_TYPES
-        if description.key in available_selects
+        if description.key in available_selects and description.key not in unavailable_selects
     )
 
 

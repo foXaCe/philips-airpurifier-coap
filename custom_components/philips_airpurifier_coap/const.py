@@ -126,6 +126,7 @@ class FanModel(StrEnum):
     AC3858_86 = "AC3858/86"
     AC4220 = "AC4220"
     AC4221 = "AC4221"
+    AC4231 = "AC4231"
     AC4236 = "AC4236"
     AC4550 = "AC4550"
     AC4558 = "AC4558"
@@ -136,8 +137,11 @@ class FanModel(StrEnum):
     CX3120 = "CX3120"
     CX3550 = "CX3550"
     CX5120 = "CX5120"
+    CX7550 = "CX7550"
     HU1509 = "HU1509"
     HU1510 = "HU1510"
+    HU4209 = "HU4209"
+    HU4210 = "HU4210"
     HU5710 = "HU5710"
 
 
@@ -155,6 +159,8 @@ class PresetMode:
     SPEED_8 = "speed_8"
     SPEED_9 = "speed_9"
     SPEED_10 = "speed_10"
+    SPEED_11 = "speed_11"
+    SPEED_12 = "speed_12"
     ALLERGEN = "allergen"
     AUTO = "auto"
     AUTO_GENERAL = "auto_general"
@@ -185,6 +191,8 @@ class PresetMode:
         SPEED_8: "pap:fan_speed_button",
         SPEED_9: "pap:fan_speed_button",
         SPEED_10: "pap:fan_speed_button",
+        SPEED_11: "pap:fan_speed_button",
+        SPEED_12: "pap:fan_speed_button",
         ALLERGEN: "pap:allergen_mode",
         AUTO: "pap:auto_mode_button",
         AUTO_GENERAL: "pap:auto_mode_button",
@@ -397,6 +405,11 @@ class PhilipsApi:
     # The 5k series heaters (e.g. CX5120) use this "D" oscillation value.
     OSCILLATION_MAP4 = {
         SWITCH_ON: 17222,
+        SWITCH_OFF: 0,
+    }
+    # The CX7550 circulator uses this oscillation value.
+    OSCILLATION_MAP5 = {
+        SWITCH_ON: 80,
         SWITCH_OFF: 0,
     }
 

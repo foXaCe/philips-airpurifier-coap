@@ -204,6 +204,7 @@ class PhilipsGenericFanBase(PhilipsGenericControlBase, FanEntity):
     AVAILABLE_HUMIDIFIERS: list[str] = []
     UNAVAILABLE_FILTERS: list[str] = []
     UNAVAILABLE_SENSORS: list[str] = []
+    UNAVAILABLE_SELECTS: list[str] = []
     EXTRA_SENSORS: list[str] = []
 
     KEY_PHILIPS_POWER: str = PhilipsApi.POWER
