@@ -359,8 +359,8 @@ async def test_observe_stream_ends(hass: HomeAssistant) -> None:
     await coord.async_shutdown()
 
 
-async def test_observe_stream_error_marks_unavailable(hass: HomeAssistant) -> None:
-    """An error in the observation stream marks the coordinator unavailable."""
+async def test_observe_stream_error_triggers_reconnect(hass: HomeAssistant) -> None:
+    """A lost observation stream reconnects instead of going unavailable."""
 
     class _FailingClient(FakeClient):
         async def observe_status(self):
@@ -368,9 +368,37 @@ async def test_observe_stream_error_marks_unavailable(hass: HomeAssistant) -> No
             yield  # pragma: no cover - makes this an async generator
 
     coord = Coordinator(hass, _FailingClient({"pwr": "1"}), "1.2.3.4", {"pwr": "1"})
-    coord.async_add_listener(lambda: None)
-    await hass.async_block_till_done()
-    assert coord.last_update_success is False
+    with patch(
+        "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+        AsyncMock(return_value=FakeClient({"pwr": "1"})),
+    ) as create:
+        coord.async_add_listener(lambda: None)
+        await hass.async_block_till_done()
+    # The dead stream reconnected (a fresh client was created) and the device
+    # kept its last data rather than being marked unavailable.
+    assert create.called
+    assert coord.last_update_success is True
+    await coord.async_shutdown()
+
+
+async def test_observe_stop_during_reconnect_is_silent(hass: HomeAssistant) -> None:
+    """A stream dying because a reconnect shut the client down does not re-reconnect."""
+
+    class _FailingClient(FakeClient):
+        async def observe_status(self):
+            raise ValueError("client shut down")
+            yield  # pragma: no cover - makes this an async generator
+
+    coord = Coordinator(hass, _FailingClient({"pwr": "1"}), "1.2.3.4", {"pwr": "1"})
+    coord._reconnecting = True  # a reconnect is in progress, tearing the client down
+    with patch(
+        "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+        AsyncMock(return_value=FakeClient({"pwr": "1"})),
+    ) as create:
+        coord.async_add_listener(lambda: None)
+        await hass.async_block_till_done()
+    assert not create.called
+    assert coord._reconnect_task is None
     await coord.async_shutdown()
 
 
