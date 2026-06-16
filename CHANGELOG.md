@@ -30,8 +30,9 @@ automations and history are preserved.
   entity and rendered with the device name and filter percentage.
 - A `py.typed` marker so the package ships its type information (Platinum
   strict-typing).
+- A system health panel reporting the configured and connected device counts.
 - `loggers` declared in `manifest.json`.
-- Exhaustive pytest suite (99% coverage), enforced by a CI gate.
+- Exhaustive pytest suite (100% coverage), enforced by a CI gate.
 - Complete CI/CD: ruff, strict `mypy`, hassfest, HACS, Dependabot, issue/PR templates.
 - Repair issue raised when a device stays unreachable, cleared once it reconnects.
 - Translatable command-failure exceptions and a `fr` translation for them.

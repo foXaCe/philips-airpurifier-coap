@@ -37,6 +37,8 @@ Philips device ──CoAP observe──▶ aioairctrl.CoAPClient
 | `config_entry_data.py` | `ConfigEntryData` — the object stored in `entry.runtime_data`. |
 | `config_flow.py` | `ConfigFlow` (menu/scan/manual/DHCP/SSDP, reauth, reconfigure) + `PhilipsOptionsFlow`. |
 | `diagnostics.py` | Redacted config-entry diagnostics. |
+| `logbook.py` | Human-readable descriptions for the `philips_filter_alert` event. |
+| `system_health.py` | Configured/connected device counts for the **System health** page. |
 | `helpers.py` | Pure helpers: `extract_model`/`extract_name` and the optional network scan. |
 | `devices/` | One class per device **model**, grouped by generation. |
 | `<platform>.py` | One file per entity platform; each owns its `EntityDescription` subclass + descriptions tuple. |
