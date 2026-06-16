@@ -5,7 +5,7 @@ All notable changes to the Philips AirPurifier CoAP integration will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.38.0] - 2026-06-16
 
 Full internal overhaul. The `unique_id` of every entity is unchanged, so existing
 automations and history are preserved.
@@ -26,6 +26,10 @@ automations and history are preserved.
   full life back to its counter (resets it to 100%, like the Philips Air+ app).
 - Support for AC2210, AC2220, AC2221 and AC3021, plus a new DHCP discovery
   address (ported from upstream).
+- Support for the AC4231, the HU4209/HU4210 humidifiers and the CX7550
+  circulator (ported from upstream).
+- Filter sensors expose a `measurement` state class so Home Assistant keeps
+  long-term statistics for them.
 - HVAC action and a detailed `heating_action` attribute for the CX3120/CX5120
   fan heaters (ported from upstream).
 - Logbook descriptions for the filter-alert event, attached to the originating
@@ -58,6 +62,13 @@ automations and history are preserved.
 - CoAP now works on IPv4-only networks (forces the aiocoap `simple6` transport
   at import; ported from upstream).
 - CX5120 oscillation used the wrong "D" value for the 5k series (ported from upstream).
+- The coordinator now reconnects immediately when the CoAP observe stream is lost
+  (corrupted packet or transient drop) instead of marking the device unavailable
+  for a whole watchdog interval.
+- Removed a duplicate "preferred index" select inherited by some models such as
+  AC4220 (ported from upstream).
+- Blocking network lookups during the scan now run in an executor, so they no
+  longer block the event loop.
 
 ### Removed
 - Dead code: `timer.py`, unused constants (`TEST_ON`, `DATA_KEY_*`, `FanUnits`, …) and
