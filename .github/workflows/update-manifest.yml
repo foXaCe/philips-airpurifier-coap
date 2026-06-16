@@ -1,71 +1,43 @@
-name: Update manifest.json and Prepare Release
+name: Publish Release
 
 on:
   push:
     tags:
-      - 'v*' # Trigger on tags that match version patterns like v1.0.0
+      - 'v*' # Trigger on version tags like v1.0.0
 
+# The manifest version is already set by the `release: vX.Y.Z` commit, so this
+# workflow only flips the matching draft release to published. It does not check
+# out, rewrite the manifest or re-tag, which previously raced the HACS/hassfest
+# runs triggered by the same tag push.
 jobs:
-  update-manifest:
+  publish:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      # Checkout the repository
-      - name: Checkout Code
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.ref }}
-
-      # Extract the release version from the tag name
-      - name: Get Release Version
-        id: get_version
-        run: echo "release_version=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-      # Update the manifest.json file with the release version
-      - name: Update manifest.json
-        run: |
-          version=${{ env.release_version }}
-          jq --arg version "$version" '.version = $version' ./custom_components/philips_airpurifier_coap/manifest.json > temp.json
-          mv temp.json ./custom_components/philips_airpurifier_coap/manifest.json
-
-      # Commit and push changes
-      - name: Commit and Push Changes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ./custom_components/philips_airpurifier_coap/manifest.json
-          git commit -m "Update manifest.json to version ${{ env.release_version }}"
-          git push origin :refs/tags/${{ github.ref_name }}
-          git tag -fa ${{ github.ref_name }} -m "Update to version ${{ github.ref_name }}"
-          git push origin ${{ github.ref_name }}
-
-      # Update the release
-      - name: Publish Draft Release
-        id: publish_release
+      - name: Publish the draft release for this tag
         uses: actions/github-script@v9
         with:
           script: |
+            const tag = process.env.GITHUB_REF_NAME;
             const { data: releases } = await github.rest.repos.listReleases({
               owner: context.repo.owner,
-              repo: context.repo.repo
+              repo: context.repo.repo,
             });
-
-            const draftRelease = releases.find(release => release.draft && release.tag_name === process.env.GITHUB_REF_NAME);
-
-            if (draftRelease) {
-              await github.rest.repos.updateRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: draftRelease.id,
-                draft: false
-              });
-            } else {
-              core.setFailed('No draft release found');
+            const draft = releases.find(
+              (release) => release.draft && release.tag_name === tag
+            );
+            if (!draft) {
+              core.info(`No draft release for ${tag}; nothing to publish.`);
+              return;
             }
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: draft.id,
+              draft: false,
+            });
+            core.info(`Published release ${tag}.`);
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
