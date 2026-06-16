@@ -5,6 +5,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.syrupy import HomeAssistantSnapshotExtension
+from syrupy.assertion import SnapshotAssertion
 
 from custom_components.philips_airpurifier_coap.config_entry_data import ConfigEntryData
 from custom_components.philips_airpurifier_coap.const import (
@@ -26,6 +28,12 @@ from .fixtures.mock_data import SAMPLE_STATUS_AC3033
 def auto_enable_custom_integrations(enable_custom_integrations):
     """Enable loading of the custom integration in every test."""
     yield
+
+
+@pytest.fixture
+def snapshot(snapshot: SnapshotAssertion) -> SnapshotAssertion:
+    """Return a snapshot assertion using the Home Assistant serializer."""
+    return snapshot.use_extension(HomeAssistantSnapshotExtension)
 
 
 @pytest.fixture

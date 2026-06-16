@@ -1,0 +1,48 @@
+# serializer version: 1
+# name: test_diagnostics
+  dict({
+    'coordinator': dict({
+      'status': dict({
+        'DeviceId': '**REDACTED**',
+        'WifiVersion': 'AWS_Philips_AIR@1.0.0',
+        'iaql': 1,
+        'mode': 'AG',
+        'modelid': 'AC3033/10',
+        'name': 'Living Room',
+        'om': '1',
+        'pm25': 15,
+        'pwr': '1',
+        'rh': 45,
+        'temp': 22,
+      }),
+    }),
+    'device_info': dict({
+      'host': '**REDACTED**',
+      'mac': None,
+      'model': 'AC3033',
+      'name': 'Living Room',
+    }),
+    'entry': dict({
+      'data': dict({
+        'device_id': '**REDACTED**',
+        'host': '**REDACTED**',
+        'model': 'AC3033',
+        'name': 'Living Room',
+        'status': dict({
+          'DeviceId': '**REDACTED**',
+          'WifiVersion': 'AWS_Philips_AIR@1.0.0',
+          'iaql': 1,
+          'mode': 'AG',
+          'modelid': 'AC3033/10',
+          'name': 'Living Room',
+          'om': '1',
+          'pm25': 15,
+          'pwr': '1',
+          'rh': 45,
+          'temp': 22,
+        }),
+      }),
+      'title': 'AC3033 Living Room',
+    }),
+  })
+# ---
