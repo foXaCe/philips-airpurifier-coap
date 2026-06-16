@@ -56,6 +56,7 @@ os.environ.setdefault("AIOCOAP_SERVER_TRANSPORT", "simple6")
 
 PLATFORMS = [
     "binary_sensor",
+    "button",
     "climate",
     "fan",
     "humidifier",

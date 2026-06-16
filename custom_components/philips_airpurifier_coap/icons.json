@@ -14,6 +14,23 @@
         }
       }
     },
+    "button": {
+      "active_carbon_filter_reset": {
+        "default": "pap:reset"
+      },
+      "hepa_filter_reset": {
+        "default": "pap:reset"
+      },
+      "nanoprotect_filter_reset": {
+        "default": "pap:reset"
+      },
+      "pre_filter_reset": {
+        "default": "pap:reset"
+      },
+      "wick_reset": {
+        "default": "pap:reset"
+      }
+    },
     "climate": {
       "pap": {
         "state": {

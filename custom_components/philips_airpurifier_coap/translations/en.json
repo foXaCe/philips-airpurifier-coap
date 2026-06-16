@@ -84,6 +84,23 @@
         }
       }
     },
+    "button": {
+      "active_carbon_filter_reset": {
+        "name": "Reset active carbon filter"
+      },
+      "hepa_filter_reset": {
+        "name": "Reset HEPA filter"
+      },
+      "nanoprotect_filter_reset": {
+        "name": "Reset NanoProtect filter"
+      },
+      "pre_filter_reset": {
+        "name": "Reset pre-filter"
+      },
+      "wick_reset": {
+        "name": "Reset wick"
+      }
+    },
     "climate": {
       "pap": {
         "name": "Fan heater",

@@ -84,6 +84,23 @@
         }
       }
     },
+    "button": {
+      "active_carbon_filter_reset": {
+        "name": "Réinitialiser le filtre à charbon actif"
+      },
+      "hepa_filter_reset": {
+        "name": "Réinitialiser le filtre HEPA"
+      },
+      "nanoprotect_filter_reset": {
+        "name": "Réinitialiser le filtre NanoProtect"
+      },
+      "pre_filter_reset": {
+        "name": "Réinitialiser le préfiltre"
+      },
+      "wick_reset": {
+        "name": "Réinitialiser la mèche"
+      }
+    },
     "climate": {
       "pap": {
         "name": "Chauffage soufflant",

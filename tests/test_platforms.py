@@ -4,6 +4,7 @@ import pytest
 
 from custom_components.philips_airpurifier_coap import (
     binary_sensor,
+    button,
     climate,
     fan,
     humidifier,
@@ -19,6 +20,7 @@ from homeassistant.core import HomeAssistant
 
 _ALL_PLATFORMS = (
     binary_sensor,
+    button,
     climate,
     fan,
     humidifier,

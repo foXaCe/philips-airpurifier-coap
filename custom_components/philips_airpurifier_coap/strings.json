@@ -331,6 +331,23 @@
       "target_temp": {
         "name": "Target temperature"
       }
+    },
+    "button": {
+      "pre_filter_reset": {
+        "name": "Reset pre-filter"
+      },
+      "hepa_filter_reset": {
+        "name": "Reset HEPA filter"
+      },
+      "active_carbon_filter_reset": {
+        "name": "Reset active carbon filter"
+      },
+      "wick_reset": {
+        "name": "Reset wick"
+      },
+      "nanoprotect_filter_reset": {
+        "name": "Reset NanoProtect filter"
+      }
     }
   },
   "exceptions": {

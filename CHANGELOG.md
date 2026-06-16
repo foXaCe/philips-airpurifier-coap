@@ -22,6 +22,8 @@ automations and history are preserved.
 
 ### Added
 - Options flow to configure the filter-alert threshold per config entry.
+- Filter-reset buttons: a `button` entity per resettable filter writes the filter's
+  full life back to its counter (resets it to 100%, like the Philips Air+ app).
 - Support for AC2210, AC2220, AC2221 and AC3021, plus a new DHCP discovery
   address (ported from upstream).
 - HVAC action and a detailed `heating_action` attribute for the CX3120/CX5120
