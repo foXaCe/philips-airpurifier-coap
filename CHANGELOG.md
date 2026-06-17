@@ -5,6 +5,14 @@ All notable changes to the Philips AirPurifier CoAP integration will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.2] - 2026-06-17
+
+### Fixed
+- Stopped logging a spurious `Error requesting data` error (and briefly flashing
+  the device unavailable) on every watchdog reconnect. A reconnect intentionally
+  drops the observe stream, so that case is now silent and the device keeps its
+  last state; a genuine stream loss still marks it unavailable.
+
 ## [0.38.1] - 2026-06-17
 
 ### Fixed
