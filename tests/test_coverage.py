@@ -385,6 +385,26 @@ async def test_observe_stream_error_marks_unavailable(hass: HomeAssistant) -> No
     await coord.async_shutdown()
 
 
+async def test_observe_stop_during_reconnect_stays_available(hass: HomeAssistant) -> None:
+    """The observe stream dying because a reconnect shut the client down is silent.
+
+    No spurious "Error requesting data" is raised and the device keeps its state.
+    """
+
+    class _FailingClient(FakeClient):
+        async def observe_status(self):
+            raise ValueError("client shut down")
+            yield  # pragma: no cover - makes this an async generator
+
+    coord = Coordinator(hass, _FailingClient({"pwr": "1"}), "1.2.3.4", {"pwr": "1"})
+    coord._reconnecting = True  # a reconnect is tearing the old client down
+    coord.async_add_listener(lambda: None)
+    await hass.async_block_till_done()
+    assert coord.last_update_success is True
+    coord._reconnecting = False
+    await coord.async_shutdown()
+
+
 async def test_watchdog_cancels_pending_reconnect(hass: HomeAssistant) -> None:
     """A new watchdog timeout cancels an in-flight reconnect task."""
     coord = Coordinator(hass, FakeClient({"pwr": "1"}), "1.2.3.4", {"pwr": "1"})

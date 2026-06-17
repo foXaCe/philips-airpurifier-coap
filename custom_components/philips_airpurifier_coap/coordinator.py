@@ -61,6 +61,7 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
 
         self._observe_task: asyncio.Task[None] | None = None
         self._reconnect_task: asyncio.Task[None] | None = None
+        self._reconnecting = False
         self._timeout: int = DEFAULT_TIMEOUT
         self._cancel_watchdog: CALLBACK_TYPE | None = None
 
@@ -146,8 +147,14 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
                 self._arm_watchdog()
         except asyncio.CancelledError:
             raise
-        except Exception as ex:  # noqa: BLE001 - any failure means the stream is dead
-            # Only the observe subscription died here; the CoAP client itself stays
+        except Exception as ex:  # noqa: BLE001 - the observe subscription died
+            if self._reconnecting:
+                # The watchdog shut the client down on purpose to reconnect; stay
+                # quiet (no spurious "Error requesting data") and let the reconnect
+                # restart the observation. The device keeps its last known state.
+                _LOGGER.debug("Observation stopped during reconnect for host %s", self.host)
+                return
+            # Only the observe subscription died; the CoAP client itself stays
             # alive, so commands keep working. Mark the device stale and let the
             # watchdog do a full reconnect. Tearing the client down on every
             # transient observe drop churned it and broke control commands.
@@ -194,6 +201,7 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
 
     async def _async_reconnect(self) -> None:
         """Recreate the CoAP client and resume observing."""
+        self._reconnecting = True
         with contextlib.suppress(Exception):
             await self.client.shutdown()
 
@@ -202,6 +210,7 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
         except asyncio.CancelledError:
             raise
         except Exception as ex:  # noqa: BLE001 - retry on any connection failure
+            self._reconnecting = False
             _LOGGER.warning("Reconnect to host %s failed: %s", self.host, ex)
             self.async_set_update_error(ex)
             self._async_create_unreachable_issue()
@@ -209,6 +218,7 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
             self._arm_watchdog()
             return
 
+        self._reconnecting = False
         _LOGGER.debug("Reconnected to host %s", self.host)
         self._async_delete_unreachable_issue()
         self._start_observing()
