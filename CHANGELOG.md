@@ -5,6 +5,16 @@ All notable changes to the Philips AirPurifier CoAP integration will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.1] - 2026-06-17
+
+### Fixed
+- Control commands could stop working until Home Assistant was restarted. A
+  transient observe-stream drop (a corrupted packet or a brief network blip)
+  made the coordinator recreate the whole CoAP client; because `aioairctrl`
+  shares one client context between observing and sending commands, this could
+  leave the coordinator pointing at a shut-down client. The client is now left
+  untouched on such drops, and only the watchdog performs a full reconnect.
+
 ## [0.38.0] - 2026-06-16
 
 Full internal overhaul. The `unique_id` of every entity is unchanged, so existing
