@@ -10,6 +10,14 @@ from typing import TYPE_CHECKING, Any
 
 from aioairctrl import CoAPClient
 
+try:
+    from aioairctrl.coap.encryption import DigestMismatchException
+except ImportError:  # pragma: no cover - defensive, library internals may move
+
+    class DigestMismatchException(Exception):  # noqa: N818 - mirrors the library name
+        """Fallback used when the library internals are unavailable."""
+
+
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import issue_registry as ir
@@ -30,6 +38,14 @@ MISSED_PACKAGE_COUNT = 3
 
 # Fallback reporting interval (seconds) until the device tells us its own.
 DEFAULT_TIMEOUT = 60
+
+# Errors raised while decoding a single corrupt status packet. A truncated or
+# mangled UDP datagram makes ``bytes.fromhex()``/``json.loads()`` fail (both
+# ``ValueError``), the decrypted plaintext may not decode as UTF-8
+# (``UnicodeDecodeError``, a ``ValueError`` subclass) or lack the expected keys
+# (``KeyError``), or the self-consistent digest check may reject it
+# (``DigestMismatchException``). None of these mean the device is unreachable.
+DECODE_ERRORS = (ValueError, KeyError, DigestMismatchException)
 
 
 class Coordinator(DataUpdateCoordinator[DeviceStatus]):
@@ -147,6 +163,15 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
                 self._arm_watchdog()
         except asyncio.CancelledError:
             raise
+        except DECODE_ERRORS as ex:
+            # A single CoAP packet arrived corrupt (truncated UDP datagram, bad
+            # decrypt). The observe generator dies on it, but the device is
+            # healthy and our last known state is still valid. Reconnect
+            # silently to resume the stream instead of flagging the device
+            # unavailable and logging a spurious "Error requesting data".
+            _LOGGER.debug("Discarding corrupt status packet from host %s: %s", self.host, ex)
+            if not self._reconnecting:
+                self._schedule_reconnect()
         except Exception as ex:  # noqa: BLE001 - the observe subscription died
             if self._reconnecting:
                 # The watchdog shut the client down on purpose to reconnect; stay

@@ -34,9 +34,16 @@ class FakeClient:
         return dict(self.initial_status), self.timeout
 
     async def observe_status(self):
-        """Yield every status pushed onto the queue (a live stream)."""
+        """Yield every status pushed onto the queue (a live stream).
+
+        Pushing an ``Exception`` onto the queue raises it, mimicking the
+        library's generator dying on a corrupt or dropped packet.
+        """
         while True:
-            yield await self.queue.get()
+            item = await self.queue.get()
+            if isinstance(item, Exception):
+                raise item
+            yield item
 
 
 def _make_coordinator(hass: HomeAssistant, client: FakeClient, status: dict | None):
@@ -135,6 +142,35 @@ async def test_watchdog_triggers_reconnect(hass: HomeAssistant) -> None:
 
     assert coord.client is new_client
     client.shutdown.assert_awaited()
+
+    await coord.async_shutdown()
+
+
+async def test_corrupt_packet_reconnects_silently(hass: HomeAssistant) -> None:
+    """A corrupt status packet reconnects silently without flagging an error."""
+    client = FakeClient({"pwr": "1"}, timeout=1)
+    coord = _make_coordinator(hass, client, {"pwr": "1"})
+    await coord.async_first_refresh()
+    new_client = FakeClient({"pwr": "1"}, timeout=1)
+
+    coord.async_add_listener(lambda: None)
+    await hass.async_block_till_done()
+
+    with patch(
+        "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+        AsyncMock(return_value=new_client),
+    ) as mock_create:
+        # Mimic the library raising on a truncated UDP datagram.
+        await client.queue.put(
+            ValueError("non-hexadecimal number found in fromhex() arg at position 220")
+        )
+        await hass.async_block_till_done()
+        mock_create.assert_awaited_once()
+
+    # The device stays available and keeps its last known state.
+    assert coord.last_update_success is True
+    assert coord.data == {"pwr": "1"}
+    assert coord.client is new_client
 
     await coord.async_shutdown()
 

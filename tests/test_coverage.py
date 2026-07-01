@@ -368,7 +368,9 @@ async def test_observe_stream_error_marks_unavailable(hass: HomeAssistant) -> No
 
     class _FailingClient(FakeClient):
         async def observe_status(self):
-            raise ValueError("stream dead")
+            # A network-level failure (not a decode error): the subscription is
+            # genuinely dead, so the device must be marked unavailable.
+            raise OSError("stream dead")
             yield  # pragma: no cover - makes this an async generator
 
     coord = Coordinator(hass, _FailingClient({"pwr": "1"}), "1.2.3.4", {"pwr": "1"})
