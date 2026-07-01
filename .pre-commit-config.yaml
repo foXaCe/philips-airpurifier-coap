@@ -1,5 +1,7 @@
 ci:
-  autoupdate_schedule: weekly
+  # Hook revisions are bumped by Renovate (pre-commit manager); pre-commit.ci is
+  # left on quarterly autoupdate only as a fallback to avoid duplicate PRs.
+  autoupdate_schedule: quarterly
   autoupdate_commit_msg: "build: pre-commit autoupdate"
   autofix_commit_msg: "style: pre-commit auto-fix"
   autofix_prs: true

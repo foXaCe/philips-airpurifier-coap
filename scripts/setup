@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Install development dependencies and the pre-commit hook.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+python -m pip install --upgrade pip
+pip install -r requirements-dev.txt
+
+# prek is a fast Rust drop-in for pre-commit; fall back to pre-commit if absent.
+if ! command -v prek >/dev/null 2>&1; then
+    pipx install prek 2>/dev/null || pip install prek
+fi
+prek install
+
+echo "Setup complete. Next: scripts/develop"

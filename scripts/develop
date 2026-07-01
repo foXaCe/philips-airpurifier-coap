@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Launch Home Assistant with this integration mounted for live debugging.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+mkdir -p config/custom_components
+ln -sfn "$(pwd)/custom_components/philips_airpurifier_coap" \
+    config/custom_components/philips_airpurifier_coap
+
+if [ ! -f config/configuration.yaml ]; then
+    cat > config/configuration.yaml <<'EOF'
+default_config:
+logger:
+  default: info
+  logs:
+    custom_components.philips_airpurifier_coap: debug
+EOF
+fi
+
+exec hass -c config --debug

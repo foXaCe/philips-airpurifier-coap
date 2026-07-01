@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Run the test suite with coverage. Extra args are forwarded to pytest.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+pytest tests/ -v --tb=short \
+    --cov=custom_components/philips_airpurifier_coap \
+    --cov-report=term-missing \
+    "$@"

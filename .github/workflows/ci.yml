@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint (ruff)
+  pre-commit:
+    name: Pre-commit hooks (prek)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -25,17 +25,19 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.13"
+          cache: pip
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install ruff
+      - name: Install prek
+        run: pipx install prek
 
-      - name: Run ruff check
-        run: ruff check custom_components/ tests/
+      - name: Cache prek hooks
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/prek
+          key: prek-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
 
-      - name: Run ruff format check
-        run: ruff format --check custom_components/ tests/
+      - name: Run prek
+        run: prek run --all-files --show-diff-on-failure --color=always
 
   typing:
     name: Type check (mypy)

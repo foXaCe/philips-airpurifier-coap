@@ -17,7 +17,10 @@ env/
 
 # IDE / Editors
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
 *.swp
 *.swo
 *~
@@ -37,8 +40,9 @@ build/
 *.egg-info/
 *.egg
 
-# Ruff
+# Ruff / mypy
 .ruff_cache/
+.mypy_cache/
 
 # Logs
 *.log
