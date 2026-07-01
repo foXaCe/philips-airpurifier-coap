@@ -1,0 +1,126 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "forkProcessing": "enabled",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(build)",
+    ":dependencyDashboard",
+    "group:monorepos",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "timezone": "Europe/Paris",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "assignees": ["foXaCe"],
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 4,
+  "rangeStrategy": "auto",
+  "rebaseWhen": "behind-base-branch",
+  "configMigration": true,
+  "dependencyDashboardTitle": "📦 Renovate Dependency Dashboard",
+  "dependencyDashboardLabels": ["dependencies", "dashboard"],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"],
+    "commitMessageAction": "Lock file maintenance",
+    "automerge": true
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security", "dependencies"],
+    "schedule": ["at any time"],
+    "prCreation": "immediate",
+    "minimumReleaseAge": null
+  },
+  "packageRules": [
+    {
+      "description": "Auto-merge low-risk updates once CI is green",
+      "matchUpdateTypes": ["patch", "pin", "digest"],
+      "automerge": true,
+      "platformAutomerge": true,
+      "labels": ["dependencies", "auto-merge"]
+    },
+    {
+      "description": "GitHub Actions grouped and auto-merged",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions",
+      "semanticCommitType": "ci",
+      "automerge": true,
+      "platformAutomerge": true,
+      "labels": ["dependencies", "github-actions"]
+    },
+    {
+      "description": "pre-commit hook revisions",
+      "matchManagers": ["pre-commit"],
+      "groupName": "pre-commit hooks",
+      "automerge": true,
+      "platformAutomerge": true,
+      "labels": ["dependencies", "pre-commit"]
+    },
+    {
+      "description": "Lint and type-check tooling",
+      "matchPackageNames": ["/^ruff/", "/^mypy/", "/^bandit/", "/^codespell/", "/^pre-commit/", "/^prek/", "j178/prek"],
+      "groupName": "lint & type tools",
+      "labels": ["dependencies", "python"]
+    },
+    {
+      "description": "pytest stack",
+      "matchPackageNames": ["/^pytest/", "syrupy"],
+      "groupName": "pytest stack",
+      "labels": ["dependencies", "python"]
+    },
+    {
+      "description": "Home Assistant deps need manual review and a cool-down",
+      "matchDepNames": ["homeassistant", "pytest-homeassistant-custom-component"],
+      "groupName": "home-assistant",
+      "labels": ["dependencies", "homeassistant", "needs-review"],
+      "automerge": false,
+      "minimumReleaseAge": "14 days",
+      "schedule": ["before 6am on the first day of the month"]
+    },
+    {
+      "description": "Runtime deps consumed by the integration at import time",
+      "matchDepNames": ["aioairctrl", "getmac", "async-upnp-client"],
+      "labels": ["dependencies", "python", "needs-review"],
+      "automerge": false,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Major bumps always land as an individual reviewable PR",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "minimumReleaseAge": "7 days",
+      "labels": ["dependencies", "major", "needs-review"]
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Bump PyPI runtime requirements pinned in the HA manifest.json",
+      "managerFilePatterns": ["/custom_components/.+/manifest\\.json$/"],
+      "matchStrings": ["\"(?<depName>[a-zA-Z0-9._-]+)==(?<currentValue>[0-9][^\"]*)\""],
+      "datasourceTemplate": "pypi"
+    },
+    {
+      "customType": "regex",
+      "description": "Bump tools pinned via 'pip install X==Y' inside workflows (e.g. mypy)",
+      "managerFilePatterns": ["/^\\.github/workflows/.+\\.ya?ml$/"],
+      "matchStrings": ["pip install (?<depName>[a-zA-Z0-9._-]+)==(?<currentValue>[0-9][^\\s]*)"],
+      "datasourceTemplate": "pypi"
+    },
+    {
+      "customType": "regex",
+      "description": "Bump the prek binary version pinned in CI, devcontainer or scripts",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/.+\\.ya?ml$/",
+        "/^\\.devcontainer/devcontainer\\.json$/",
+        "/^scripts/.+/"
+      ],
+      "matchStrings": ["prek[ =@:]+v?(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "j178/prek"
+    }
+  ]
+}

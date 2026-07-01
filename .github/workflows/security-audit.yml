@@ -1,0 +1,85 @@
+name: Security audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Advisory only: aioairctrl / aiocoap are the pinned CoAP stack and may carry
+  # advisories we cannot patch away, so a finding informs but never blocks.
+  pip-audit:
+    name: pip-audit (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install pip-audit
+        run: pipx install pip-audit
+      - name: Audit runtime requirements from manifest.json
+        continue-on-error: true
+        run: |
+          for m in $(find custom_components -name manifest.json); do
+            jq -r '.requirements[]?' "$m" > /tmp/reqs.txt
+            [ -s /tmp/reqs.txt ] && pip-audit --requirement /tmp/reqs.txt || true
+          done
+      - name: Audit test requirements
+        continue-on-error: true
+        run: |
+          [ -f requirements-test.txt ] && pip-audit --requirement requirements-test.txt || true
+
+  osv-scanner:
+    name: OSV-Scanner (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+      - uses: google/osv-scanner-action/osv-scanner-action@v2
+        with:
+          scan-args: |-
+            --recursive
+            --skip-git
+            ./
+
+  secret-scan:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: ${{ github.event_name == 'pull_request' }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
