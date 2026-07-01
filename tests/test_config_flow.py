@@ -191,6 +191,50 @@ async def test_dhcp_flow_connection_error(hass: HomeAssistant, bypass_integratio
     assert result["reason"] == "timeout"
 
 
+async def test_dhcp_flow_already_configured_skips_probe(
+    hass: HomeAssistant, bypass_integration_deps
+) -> None:
+    """A DHCP re-announcement of a configured host aborts without probing it."""
+    _existing_entry().add_to_hass(hass)
+    info = DhcpServiceInfo(ip="1.2.3.4", hostname="mxchip", macaddress="b0f893000000")
+    create = AsyncMock()
+    with patch(
+        "custom_components.philips_airpurifier_coap.config_flow.CoAPClient.create",
+        create,
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_DHCP}, data=info
+        )
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "already_configured"
+    create.assert_not_called()
+
+
+async def test_ssdp_flow_already_configured_skips_probe(
+    hass: HomeAssistant, bypass_integration_deps
+) -> None:
+    """An SSDP re-announcement of a configured host aborts without probing it."""
+    _existing_entry().add_to_hass(hass)
+    info = SsdpServiceInfo(
+        ssdp_usn="usn",
+        ssdp_st="st",
+        ssdp_location="http://1.2.3.4/",
+        upnp={},
+        ssdp_headers={"_host": "1.2.3.4"},
+    )
+    create = AsyncMock()
+    with patch(
+        "custom_components.philips_airpurifier_coap.config_flow.CoAPClient.create",
+        create,
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_SSDP}, data=info
+        )
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "already_configured"
+    create.assert_not_called()
+
+
 async def test_ssdp_flow_no_host(hass: HomeAssistant, bypass_integration_deps) -> None:
     """SSDP discovery without an extractable host aborts."""
     info = SsdpServiceInfo(

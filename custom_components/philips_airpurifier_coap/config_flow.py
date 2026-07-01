@@ -127,6 +127,11 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.debug("async_step_dhcp: called, found: %s", discovery_info)
 
         self._host = discovery_info.ip
+        # A device already configured at this IP re-announces itself over DHCP on
+        # lease renewal. Probing it again would time out because the device only
+        # accepts one CoAP connection, already held by the coordinator, so bail
+        # out early instead of logging a spurious "doesn't answer" warning.
+        self._async_abort_entries_match({CONF_HOST: self._host})
         _LOGGER.debug("trying to configure host: %s", self._host)
 
         try:
@@ -172,6 +177,9 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.warning("Could not extract host from SSDP discovery info")
             return self.async_abort(reason="no_host")
 
+        # Skip devices already configured at this IP (see async_step_dhcp): a
+        # redundant probe would time out against the coordinator's live connection.
+        self._async_abort_entries_match({CONF_HOST: self._host})
         _LOGGER.debug("trying to configure host: %s", self._host)
 
         try:
