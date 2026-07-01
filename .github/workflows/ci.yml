@@ -55,7 +55,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-test.txt
           # Pinned for reproducibility: a blocking gate must be deterministic.
-          pip install mypy==1.20.2
+          pip install mypy==2.1.0
 
       - name: Run mypy
         run: mypy custom_components/philips_airpurifier_coap/ --ignore-missing-imports
