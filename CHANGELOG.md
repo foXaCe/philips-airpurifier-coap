@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-07-01
+
+### Changed
+- Updated the bundled `aioairctrl` requirement from 0.2.5 to 0.3.1. Verified
+  against a real AMF870 device: the CoAP status stream decrypts and parses
+  correctly.
+
 ### Fixed
 - A corrupt CoAP status packet (a truncated or mangled UDP datagram) no longer
   logs an `Error requesting data` error or briefly marks the device unavailable.
