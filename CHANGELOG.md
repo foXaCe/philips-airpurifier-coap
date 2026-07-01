@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.39.1] - 2026-07-01
+
+### Fixed
+- A device already configured no longer logs a spurious `Timeout, host … looks
+  like a Philips AirPurifier but doesn't answer` warning when it re-announces
+  itself over DHCP or SSDP. The rediscovery is now aborted before probing, since
+  the device only accepts the single CoAP connection already held by the
+  coordinator. IP changes are still picked up and update the existing entry.
+
 ## [0.39.0] - 2026-07-01
 
 ### Changed
