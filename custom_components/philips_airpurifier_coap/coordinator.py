@@ -14,7 +14,7 @@ try:
     from aioairctrl.coap.encryption import DigestMismatchException
 except ImportError:  # pragma: no cover - defensive, library internals may move
 
-    class DigestMismatchException(Exception):  # noqa: N818 - mirrors the library name
+    class DigestMismatchException(Exception):  # type: ignore[no-redef]  # noqa: N818
         """Fallback used when the library internals are unavailable."""
 
 

@@ -395,7 +395,9 @@ async def test_observe_stop_during_reconnect_stays_available(hass: HomeAssistant
 
     class _FailingClient(FakeClient):
         async def observe_status(self):
-            raise ValueError("client shut down")
+            # A network-level drop (not a decode error) while a reconnect is in
+            # flight: exercises the except-Exception + _reconnecting branch.
+            raise OSError("client shut down")
             yield  # pragma: no cover - makes this an async generator
 
     coord = Coordinator(hass, _FailingClient({"pwr": "1"}), "1.2.3.4", {"pwr": "1"})

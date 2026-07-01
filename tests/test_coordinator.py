@@ -175,6 +175,33 @@ async def test_corrupt_packet_reconnects_silently(hass: HomeAssistant) -> None:
     await coord.async_shutdown()
 
 
+async def test_corrupt_packet_during_reconnect_does_not_reschedule(
+    hass: HomeAssistant,
+) -> None:
+    """A corrupt packet while a reconnect is already in flight schedules nothing."""
+    client = FakeClient({"pwr": "1"})
+    coord = _make_coordinator(hass, client, {"pwr": "1"})
+    coord._reconnecting = True  # a reconnect is already tearing the client down
+
+    with patch(
+        "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+        AsyncMock(),
+    ) as mock_create:
+        coord.async_add_listener(lambda: None)
+        await hass.async_block_till_done()
+        await client.queue.put(
+            ValueError("non-hexadecimal number found in fromhex() arg at position 42")
+        )
+        await hass.async_block_till_done()
+
+    # Already reconnecting → no second reconnect, device keeps its state.
+    assert mock_create.await_count == 0
+    assert coord.last_update_success is True
+
+    coord._reconnecting = False
+    await coord.async_shutdown()
+
+
 async def test_reconnect_failure_marks_unavailable(hass: HomeAssistant) -> None:
     """A failed reconnect marks the coordinator as unavailable and retries."""
     client = FakeClient({"pwr": "1"}, timeout=1)
