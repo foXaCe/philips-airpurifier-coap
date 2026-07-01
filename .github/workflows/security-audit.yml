@@ -43,20 +43,6 @@ jobs:
         run: |
           [ -f requirements-test.txt ] && pip-audit --requirement requirements-test.txt || true
 
-  osv-scanner:
-    name: OSV-Scanner (advisory)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v7
-      - uses: google/osv-scanner-action/osv-scanner-action@v2
-        with:
-          scan-args: |-
-            --recursive
-            --skip-git
-            ./
-
   secret-scan:
     name: Gitleaks
     runs-on: ubuntu-latest
