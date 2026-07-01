@@ -19,6 +19,9 @@
   "rangeStrategy": "auto",
   "rebaseWhen": "behind-base-branch",
   "configMigration": true,
+  "pre-commit": {
+    "enabled": true
+  },
   "dependencyDashboardTitle": "📦 Renovate Dependency Dashboard",
   "dependencyDashboardLabels": ["dependencies", "dashboard"],
   "lockFileMaintenance": {
