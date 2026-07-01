@@ -79,7 +79,7 @@ exclude_dirs = ["tests", ".venv", "venv"]
 skips = ["B101", "B110"]  # B101: assert in tests, B110: try/except/pass (intentional)
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 strict = true
 # Consume Home Assistant's public API without fighting its re-export hygiene,
 # and tolerate untyped third-party deps (aioairctrl, aiocoap, getmac).
