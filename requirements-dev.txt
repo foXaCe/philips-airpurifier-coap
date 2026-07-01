@@ -6,7 +6,7 @@
 
 # Lint, format and type checking (kept in sync with .pre-commit-config.yaml / CI).
 ruff
-mypy==1.19.1
+mypy==1.20.2
 bandit
 codespell
 
