@@ -22,7 +22,7 @@ test = [
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.0.0",
     "pytest-homeassistant-custom-component>=0.13.0",
-    "aioairctrl==0.2.5",
+    "aioairctrl==0.3.1",
     "getmac==0.9.5",
 ]
 
