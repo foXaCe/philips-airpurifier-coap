@@ -1,15 +1,33 @@
-[![HACS Default][hacs_shield]][hacs]
-[![GitHub Latest Release][releases_shield]][latest_release]
+# Philips AirPurifier (with CoAP)
+
+[![GitHub Release][releases_shield]][latest_release]
+[![CI][ci_shield]][ci]
+[![hassfest][hassfest_shield]][hassfest]
+[![HACS Custom][hacs_shield]][hacs]
+[![License][license_shield]][license]
+[![Maintenance][maintenance_shield]][maintenance]
 [![Community Forum][community_forum_shield]][community_forum]
 
-[hacs_shield]: https://img.shields.io/static/v1.svg?label=HACS&message=Default&style=popout&color=green&labelColor=41bdf5&logo=HomeAssistantCommunityStore&logoColor=white
-[hacs]: https://hacs.xyz/docs/default_repositories
-
 [latest_release]: https://github.com/foXaCe/philips-airpurifier-coap/releases/latest
-[releases_shield]: https://img.shields.io/github/release/foXaCe/philips-airpurifier-coap.svg?style=popout
+[releases_shield]: https://img.shields.io/github/v/release/foXaCe/philips-airpurifier-coap?style=for-the-badge
 
-[community_forum_shield]: https://img.shields.io/static/v1.svg?label=%20&message=Forum&style=popout&color=41bdf5&logo=HomeAssistant&logoColor=white
+[ci]: https://github.com/foXaCe/philips-airpurifier-coap/actions/workflows/ci.yml
+[ci_shield]: https://img.shields.io/github/actions/workflow/status/foXaCe/philips-airpurifier-coap/ci.yml?branch=main&style=for-the-badge&label=CI
+
+[hassfest]: https://github.com/foXaCe/philips-airpurifier-coap/actions/workflows/hassfest.yaml
+[hassfest_shield]: https://img.shields.io/github/actions/workflow/status/foXaCe/philips-airpurifier-coap/hassfest.yaml?branch=main&style=for-the-badge&label=hassfest
+
+[hacs]: https://github.com/hacs/integration
+[hacs_shield]: https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge
+
+[license]: ./LICENSE
+[license_shield]: https://img.shields.io/github/license/foXaCe/philips-airpurifier-coap?style=for-the-badge
+
+[maintenance]: https://github.com/foXaCe/philips-airpurifier-coap/graphs/commit-activity
+[maintenance_shield]: https://img.shields.io/maintenance/yes/2026?style=for-the-badge
+
 [community_forum]: https://community.home-assistant.io/t/philips-air-purifier/53030
+[community_forum_shield]: https://img.shields.io/badge/Community-Forum-41BDF5.svg?style=for-the-badge&logo=homeassistant&logoColor=white
 
 This is a `Local Push` integration for Philips airpurifiers and humidifiers.
 Currently only encrypted-CoAP is implemented.
