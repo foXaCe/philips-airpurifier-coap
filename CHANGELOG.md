@@ -5,6 +5,15 @@ All notable changes to the Philips AirPurifier CoAP integration will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- A corrupt CoAP status packet (a truncated or mangled UDP datagram) no longer
+  logs an `Error requesting data` error or briefly marks the device unavailable.
+  The bad packet is discarded and the observe stream reconnects silently while
+  the device keeps its last known state; a genuine connection loss still marks
+  it unavailable.
+
 ## [0.38.2] - 2026-06-17
 
 ### Fixed

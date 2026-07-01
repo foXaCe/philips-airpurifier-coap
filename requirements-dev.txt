@@ -1,0 +1,14 @@
+# Development dependencies for philips-airpurifier-coap.
+# Install with: pip install -r requirements-dev.txt
+
+# Test stack (pytest, HA custom-component harness, runtime deps).
+-r requirements-test.txt
+
+# Lint, format and type checking (kept in sync with .pre-commit-config.yaml / CI).
+ruff
+mypy==1.19.1
+bandit
+codespell
+
+# pre-commit runner (prek is a faster drop-in; either works with the same config).
+pre-commit

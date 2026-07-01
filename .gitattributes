@@ -1,0 +1,25 @@
+# Normalize line endings to LF on checkin, auto on checkout.
+* text=auto eol=lf
+
+# Explicitly declare text files.
+*.py    text diff=python
+*.pyi   text diff=python
+*.json  text
+*.md    text
+*.yml   text
+*.yaml  text
+*.toml  text
+*.cfg   text
+*.txt   text
+
+# Binary assets — never touch line endings, don't diff.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.zip   binary
+
+# Keep noise out of language stats and release archives.
+tests/**        linguist-detectable=false
+*.md            linguist-documentation
