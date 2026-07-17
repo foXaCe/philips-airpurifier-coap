@@ -1,10 +1,10 @@
 [project]
 name = "philips-airpurifier-coap"
-version = "0.37.0"
+version = "0.39.1"
 description = "Home Assistant custom integration for Philips Air Purifiers using CoAP"
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 authors = [
     {name = "kongo09"}
 ]
@@ -29,6 +29,12 @@ test = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+filterwarnings = [
+    "error",
+    # aioairctrl's aiocoap monkeypatch imports the deprecated EXCHANGE_LIFETIME
+    # constant; upstream issue, not fixable from this integration.
+    "ignore:EXCHANGE_LIFETIME is deprecated:DeprecationWarning",
+]
 
 [tool.coverage.run]
 source = ["custom_components/philips_airpurifier_coap"]
@@ -45,7 +51,7 @@ exclude_lines = [
 partial_branches = ["pragma: no branch"]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py313"
 line-length = 100
 
 [tool.ruff.lint]
@@ -79,6 +85,8 @@ exclude_dirs = ["tests", ".venv", "venv"]
 skips = ["B101", "B110"]  # B101: assert in tests, B110: try/except/pass (intentional)
 
 [tool.mypy]
+# Matches the HA version type-checked against (recent HA core uses 3.14-only
+# syntax); runtime support floor is requires-python / ruff target-version.
 python_version = "3.14"
 strict = true
 # Consume Home Assistant's public API without fighting its re-export hygiene,
