@@ -207,47 +207,47 @@
       }
     },
     "sensor": {
-      "indoor_allergen_index": {
-        "name": "Indoor allergen index"
+      "active_carbon_filter": {
+        "name": "Active carbon filter"
       },
-      "pm25": {
-        "name": "PM2.5"
-      },
-      "gas": {
+      "gas_level": {
         "name": "Gas"
-      },
-      "total_volatile_organic_compounds": {
-        "name": "Total volatile organic compounds"
-      },
-      "humidity": {
-        "name": "Humidity"
-      },
-      "time_remaining": {
-        "name": "Time remaining"
-      },
-      "temperature": {
-        "name": "Temperature"
-      },
-      "water_level": {
-        "name": "Water level"
-      },
-      "rssi": {
-        "name": "RSSI"
-      },
-      "pre_filter": {
-        "name": "Pre-filter"
       },
       "hepa_filter": {
         "name": "HEPA filter"
       },
-      "active_carbon_filter": {
-        "name": "Active carbon filter"
+      "humidity": {
+        "name": "Humidity"
       },
-      "wick": {
-        "name": "Wick"
+      "indoor_allergen_index": {
+        "name": "Indoor allergen index"
       },
       "nanoprotect_filter": {
         "name": "NanoProtect filter"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "pre_filter": {
+        "name": "Pre-filter"
+      },
+      "rssi": {
+        "name": "RSSI"
+      },
+      "temperature": {
+        "name": "Temperature"
+      },
+      "time_remaining": {
+        "name": "Time remaining"
+      },
+      "total_volatile_organic_compounds": {
+        "name": "Total volatile organic compounds"
+      },
+      "water_level": {
+        "name": "Water level"
+      },
+      "wick": {
+        "name": "Wick"
       }
     },
     "switch": {
@@ -328,7 +328,7 @@
       "oscillation": {
         "name": "Oscillation"
       },
-      "target_temp": {
+      "target_temperature": {
         "name": "Target temperature"
       }
     },

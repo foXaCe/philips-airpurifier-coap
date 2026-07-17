@@ -6,11 +6,15 @@
       "model_unsupported": "Modelul nu este suportat",
       "no_devices_found": "Nu s-au găsit dispozitive Philips în rețea",
       "no_host": "Nu s-a putut determina adresa IP a dispozitivului",
+      "reauth_different_device": "Dispozitivul de la această adresă este diferit de cel inițial",
+      "reauth_successful": "Reautentificare reușită",
+      "reconfigure_different_device": "Dispozitivul de la această adresă este diferit de cel inițial",
       "timeout": "Timeout, nu se poate conecta la dispozitiv"
     },
     "error": {
       "connect": "Nu se poate conecta la dispozitiv",
-      "host": "Adresa dispozitivului este obligatorie"
+      "host": "Adresa dispozitivului este obligatorie",
+      "timeout": "Timpul de conectare la dispozitiv a expirat"
     },
     "progress": {
       "scanning": "Căutare dispozitive Philips în rețea..."
@@ -31,6 +35,20 @@
         },
         "description": "S-au găsit {count} dispozitiv(e) în rețea",
         "title": "Selectare dispozitiv"
+      },
+      "reauth_confirm": {
+        "data": {
+          "host": "Numele de gazdă sau adresa IP a dispozitivului"
+        },
+        "description": "Dispozitivul {name} nu este accesibil. Verificați sau actualizați adresa IP.",
+        "title": "Reautentificare dispozitiv"
+      },
+      "reconfigure": {
+        "data": {
+          "host": "Numele de gazdă sau adresa IP a dispozitivului"
+        },
+        "description": "Actualizați adresa IP pentru {name}",
+        "title": "Reconfigurare dispozitiv"
       },
       "user": {
         "description": "Alegeți cum să adăugați dispozitivul",
@@ -64,6 +82,23 @@
           "off": "Gol",
           "on": "Nu este gol"
         }
+      }
+    },
+    "button": {
+      "active_carbon_filter_reset": {
+        "name": "Resetare filtru carbon activ"
+      },
+      "hepa_filter_reset": {
+        "name": "Resetare filtru HEPA"
+      },
+      "nanoprotect_filter_reset": {
+        "name": "Resetare filtru NanoProtect"
+      },
+      "pre_filter_reset": {
+        "name": "Resetare pre-filtru"
+      },
+      "wick_reset": {
+        "name": "Resetare fitil"
       }
     },
     "climate": {
@@ -186,7 +221,7 @@
       "oscillation": {
         "name": "Oscilație"
       },
-      "target_temp": {
+      "target_temperature": {
         "name": "Temperatura țintă"
       }
     },
@@ -240,7 +275,7 @@
       "active_carbon_filter": {
         "name": "Filtru carbon activ"
       },
-      "gas": {
+      "gas_level": {
         "name": "Gaz"
       },
       "hepa_filter": {
@@ -299,6 +334,36 @@
       "standby_sensors": {
         "name": "Senzori standby"
       }
+    }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "Comanda nu a putut fi trimisă către {name}."
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "description": "Home Assistant nu mai poate contacta dispozitivul Philips de la {host} și continuă să încerce reconectarea. Verificați dacă dispozitivul este pornit și accesibil în rețea; dacă adresa IP s-a schimbat, reconfigurați sau adăugați din nou integrarea. Oprirea și repornirea dispozitivului ajută adesea.",
+      "title": "Dispozitivul Philips de la {host} nu este accesibil"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "filter_alert_threshold": "Prag de alertă pentru filtru (%)"
+        },
+        "data_description": {
+          "filter_alert_threshold": "Alertă când un filtru scade sub acest procent"
+        },
+        "title": "Opțiuni"
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "configured_devices": "Dispozitive configurate",
+      "connected_devices": "Dispozitive conectate"
     }
   },
   "title": "Philips AirPurifier"

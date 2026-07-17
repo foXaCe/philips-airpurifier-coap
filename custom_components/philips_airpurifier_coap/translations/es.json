@@ -6,11 +6,15 @@
       "model_unsupported": "Modelo no compatible",
       "no_devices_found": "No se encontraron dispositivos Philips en la red",
       "no_host": "No se pudo determinar la dirección IP del dispositivo",
+      "reauth_different_device": "El dispositivo en esta dirección es distinto del original",
+      "reauth_successful": "Reautenticación correcta",
+      "reconfigure_different_device": "El dispositivo en esta dirección es distinto del original",
       "timeout": "Tiempo de espera agotado, no se puede conectar al dispositivo"
     },
     "error": {
       "connect": "No se puede conectar al dispositivo",
-      "host": "Se requiere la dirección del dispositivo"
+      "host": "Se requiere la dirección del dispositivo",
+      "timeout": "Tiempo de espera agotado al conectar con el dispositivo"
     },
     "progress": {
       "scanning": "Buscando dispositivos Philips en la red..."
@@ -31,6 +35,20 @@
         },
         "description": "Se encontraron {count} dispositivo(s) en la red",
         "title": "Seleccionar dispositivo"
+      },
+      "reauth_confirm": {
+        "data": {
+          "host": "Nombre de host o dirección IP del dispositivo"
+        },
+        "description": "El dispositivo {name} no está accesible. Verifique o actualice la dirección IP.",
+        "title": "Volver a autenticar el dispositivo"
+      },
+      "reconfigure": {
+        "data": {
+          "host": "Nombre de host o dirección IP del dispositivo"
+        },
+        "description": "Actualizar la dirección IP de {name}",
+        "title": "Reconfigurar el dispositivo"
       },
       "user": {
         "description": "Elige cómo añadir tu dispositivo",
@@ -64,6 +82,23 @@
           "off": "Vacío",
           "on": "No vacío"
         }
+      }
+    },
+    "button": {
+      "active_carbon_filter_reset": {
+        "name": "Restablecer el filtro de carbón activo"
+      },
+      "hepa_filter_reset": {
+        "name": "Restablecer el filtro HEPA"
+      },
+      "nanoprotect_filter_reset": {
+        "name": "Restablecer el filtro NanoProtect"
+      },
+      "pre_filter_reset": {
+        "name": "Restablecer el prefiltro"
+      },
+      "wick_reset": {
+        "name": "Restablecer la mecha"
       }
     },
     "climate": {
@@ -186,7 +221,7 @@
       "oscillation": {
         "name": "Oscilación"
       },
-      "target_temp": {
+      "target_temperature": {
         "name": "Temperatura objetivo"
       }
     },
@@ -240,7 +275,7 @@
       "active_carbon_filter": {
         "name": "Filtro de carbón activo"
       },
-      "gas": {
+      "gas_level": {
         "name": "Gas"
       },
       "hepa_filter": {
@@ -299,6 +334,36 @@
       "standby_sensors": {
         "name": "Sensores en espera"
       }
+    }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "No se pudo enviar el comando a {name}."
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "description": "Home Assistant ya no puede comunicarse con el dispositivo Philips en {host} y sigue intentando reconectarse. Compruebe que el dispositivo está encendido y accesible en la red; si su dirección IP cambió, reconfigure o vuelva a añadir la integración. Apagar y encender el dispositivo suele ayudar.",
+      "title": "El dispositivo Philips en {host} no está accesible"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "filter_alert_threshold": "Umbral de alerta del filtro (%)"
+        },
+        "data_description": {
+          "filter_alert_threshold": "Alertar cuando un filtro caiga por debajo de este porcentaje"
+        },
+        "title": "Opciones"
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "configured_devices": "Dispositivos configurados",
+      "connected_devices": "Dispositivos conectados"
     }
   },
   "title": "Philips AirPurifier"

@@ -6,11 +6,15 @@
       "model_unsupported": "Model nie je podporovaný",
       "no_devices_found": "V sieti neboli nájdené žiadne zariadenia Philips",
       "no_host": "Nepodarilo sa určiť IP adresu zariadenia",
+      "reauth_different_device": "Zariadenie na tejto adrese je iné ako pôvodné",
+      "reauth_successful": "Opätovné overenie bolo úspešné",
+      "reconfigure_different_device": "Zariadenie na tejto adrese je iné ako pôvodné",
       "timeout": "Časový limit, nemožno sa pripojiť k zariadeniu"
     },
     "error": {
       "connect": "Nemožno sa pripojiť k zariadeniu",
-      "host": "Adresa zariadenia je povinná"
+      "host": "Adresa zariadenia je povinná",
+      "timeout": "Časový limit pripojenia k zariadeniu vypršal"
     },
     "progress": {
       "scanning": "Vyhľadávanie zariadení Philips v sieti..."
@@ -31,6 +35,20 @@
         },
         "description": "Nájdených {count} zariadení v sieti",
         "title": "Výber zariadenia"
+      },
+      "reauth_confirm": {
+        "data": {
+          "host": "Názov hostiteľa alebo IP adresa zariadenia"
+        },
+        "description": "Zariadenie {name} je nedostupné. Skontrolujte alebo aktualizujte IP adresu.",
+        "title": "Opätovné overenie zariadenia"
+      },
+      "reconfigure": {
+        "data": {
+          "host": "Názov hostiteľa alebo IP adresa zariadenia"
+        },
+        "description": "Aktualizujte IP adresu pre {name}",
+        "title": "Rekonfigurácia zariadenia"
       },
       "user": {
         "description": "Vyberte spôsob pridania zariadenia",
@@ -64,6 +82,23 @@
           "off": "Prázdna",
           "on": "Nie je prázdna"
         }
+      }
+    },
+    "button": {
+      "active_carbon_filter_reset": {
+        "name": "Resetovať filter s aktívnym uhlím"
+      },
+      "hepa_filter_reset": {
+        "name": "Resetovať HEPA filter"
+      },
+      "nanoprotect_filter_reset": {
+        "name": "Resetovať NanoProtect filter"
+      },
+      "pre_filter_reset": {
+        "name": "Resetovať predfilter"
+      },
+      "wick_reset": {
+        "name": "Resetovať knôt"
       }
     },
     "climate": {
@@ -186,7 +221,7 @@
       "oscillation": {
         "name": "Oscilácia"
       },
-      "target_temp": {
+      "target_temperature": {
         "name": "Cieľová teplota"
       }
     },
@@ -240,7 +275,7 @@
       "active_carbon_filter": {
         "name": "Filter s aktívnym uhlím"
       },
-      "gas": {
+      "gas_level": {
         "name": "Plyn"
       },
       "hepa_filter": {
@@ -299,6 +334,36 @@
       "standby_sensors": {
         "name": "Pohotovostné senzory"
       }
+    }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "Príkaz sa nepodarilo odoslať zariadeniu {name}."
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "description": "Home Assistant už nedokáže kontaktovať zariadenie Philips na adrese {host} a naďalej sa pokúša o opätovné pripojenie. Skontrolujte, či je zariadenie zapnuté a dostupné v sieti; ak sa jeho IP adresa zmenila, rekonfigurujte alebo znova pridajte integráciu. Vypnutie a zapnutie zariadenia často pomôže.",
+      "title": "Zariadenie Philips na adrese {host} je nedostupné"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "filter_alert_threshold": "Prah upozornenia na filter (%)"
+        },
+        "data_description": {
+          "filter_alert_threshold": "Upozorniť, keď filter klesne pod toto percento"
+        },
+        "title": "Možnosti"
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "configured_devices": "Nakonfigurované zariadenia",
+      "connected_devices": "Pripojené zariadenia"
     }
   },
   "title": "Philips AirPurifier"
