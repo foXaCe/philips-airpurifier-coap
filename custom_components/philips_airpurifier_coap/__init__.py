@@ -215,18 +215,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: PhilipsConfigEntry) -> b
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # Reload the entry when its options change (e.g. the filter alert threshold).
-    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
-
     # Start deferred MAC lookup in background (non-blocking, tied to the entry)
     entry.async_create_background_task(hass, get_mac_deferred(), "philips_mac_lookup")
 
     return True
-
-
-async def _async_update_listener(hass: HomeAssistant, entry: PhilipsConfigEntry) -> None:
-    """Reload the entry when its options are updated."""
-    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: PhilipsConfigEntry) -> bool:

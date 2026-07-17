@@ -189,8 +189,8 @@ async def test_setup_first_refresh_timeout(hass: HomeAssistant, bypass_integrati
     assert entry.state is ConfigEntryState.SETUP_RETRY
 
 
-async def test_options_update_reloads_entry(hass: HomeAssistant, bypass_integration_deps) -> None:
-    """Updating the options triggers the reload listener."""
+async def test_options_flow_reloads_entry(hass: HomeAssistant, bypass_integration_deps) -> None:
+    """Finishing the options flow reloads the entry (OptionsFlowWithReload)."""
     from custom_components.philips_airpurifier_coap.const import CONF_FILTER_ALERT_THRESHOLD
 
     entry = _make_entry()
@@ -207,9 +207,13 @@ async def test_options_update_reloads_entry(hass: HomeAssistant, bypass_integrat
                 "custom_components.philips_airpurifier_coap", fromlist=["async_unload_entry"]
             ).async_unload_entry,
         ) as unload:
-            hass.config_entries.async_update_entry(entry, options={CONF_FILTER_ALERT_THRESHOLD: 22})
+            result = await hass.config_entries.options.async_init(entry.entry_id)
+            await hass.config_entries.options.async_configure(
+                result["flow_id"], {CONF_FILTER_ALERT_THRESHOLD: 22}
+            )
             await hass.async_block_till_done()
         assert unload.called
+        assert entry.options[CONF_FILTER_ALERT_THRESHOLD] == 22
 
 
 async def test_unload_when_platforms_fail(hass: HomeAssistant, bypass_integration_deps) -> None:
@@ -591,6 +595,9 @@ def test_icon_from_map_non_numeric() -> None:
     icon_map = ((0, "mdi:a"), (10, "mdi:b"))
     assert sensor._icon_from_map("not-a-number", icon_map) == "mdi:a"
     assert sensor._icon_from_map(5, None) is None
+    # A value between two thresholds keeps the lower threshold's icon.
+    assert sensor._icon_from_map(5, icon_map) == "mdi:a"
+    assert sensor._icon_from_map(10, icon_map) == "mdi:b"
 
 
 async def test_sensor_unknown_model_still_builds(hass: HomeAssistant, make_runtime) -> None:
