@@ -84,7 +84,7 @@ class PhilipsAC1214(PhilipsGenericFan):
         """Ensure device is powered on before mode changes."""
         if not self.is_on:
             _LOGGER.debug("AC1214 is switched on without setting a mode")
-            await self.coordinator.client.set_control_value(
+            await self.coordinator.async_set_control_value(
                 PhilipsApi.POWER, PhilipsApi.POWER_MAP[SWITCH_ON]
             )
             await asyncio.sleep(1)
@@ -96,7 +96,8 @@ class PhilipsAC1214(PhilipsGenericFan):
         if target_mode != "A" and current_pattern and current_pattern.get(PhilipsApi.MODE) != "M":
             _LOGGER.debug("AC1214 switches to mode 'A' first")
             a_status_pattern = self._available_preset_modes.get(PresetMode.ALLERGEN)
-            await self.coordinator.client.set_control_values(data=a_status_pattern)
+            if a_status_pattern:  # pragma: no branch
+                await self.coordinator.async_set_control_values(data=a_status_pattern)
             await asyncio.sleep(1)
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
@@ -110,7 +111,7 @@ class PhilipsAC1214(PhilipsGenericFan):
             target_mode = status_pattern.get(PhilipsApi.MODE)
             await self._ensure_mode_transition(target_mode)
             _LOGGER.debug("AC1214 sets preset mode to: %s", preset_mode)
-            await self.coordinator.client.set_control_values(data=status_pattern)
+            await self.coordinator.async_set_control_values(data=status_pattern)
 
     async def async_set_percentage(self, percentage: int) -> None:
         """Set the preset mode of the fan."""
@@ -128,7 +129,7 @@ class PhilipsAC1214(PhilipsGenericFan):
                 target_mode = status_pattern.get(PhilipsApi.MODE)
                 await self._ensure_mode_transition(target_mode)
                 _LOGGER.debug("AC1214 sets speed percentage to: %s", percentage)
-                await self.coordinator.client.set_control_values(data=status_pattern)
+                await self.coordinator.async_set_control_values(data=status_pattern)
 
     async def async_turn_on(
         self,

@@ -202,6 +202,99 @@ async def test_corrupt_packet_during_reconnect_does_not_reschedule(
     await coord.async_shutdown()
 
 
+async def test_reconnect_hang_times_out_and_retries(hass: HomeAssistant) -> None:
+    """A reconnect that hangs (lost CoAP sync packet) times out and retries.
+
+    aioairctrl uses non-confirmable messages without timeouts, so a lost
+    datagram used to hang CoAPClient.create forever: the watchdog was never
+    re-armed and only a Home Assistant restart recovered the device.
+    """
+    client = FakeClient({"pwr": "1"})
+    coord = _make_coordinator(hass, client, {"pwr": "1"})
+
+    async def _hang(host):
+        await asyncio.Event().wait()
+
+    with (
+        patch(
+            "custom_components.philips_airpurifier_coap.coordinator.CONNECT_TIMEOUT",
+            0,
+        ),
+        patch(
+            "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+            _hang,
+        ),
+    ):
+        coord._schedule_reconnect()
+        assert coord._reconnect_task is not None
+        # block_till_done does not wait for background tasks; await it directly.
+        await coord._reconnect_task
+
+    # The hang degraded into a failure: device unavailable, but the watchdog is
+    # re-armed so the coordinator keeps retrying instead of wedging forever.
+    assert coord.last_update_success is False
+    assert coord._reconnecting is False
+    assert coord._cancel_watchdog is not None
+
+    await coord.async_shutdown()
+
+
+async def test_command_timeout_raises_and_schedules_reconnect(
+    hass: HomeAssistant,
+) -> None:
+    """A control command that hangs times out and triggers a reconnect."""
+    client = FakeClient({"pwr": "1"})
+    coord = _make_coordinator(hass, client, {"pwr": "1"})
+
+    async def _hang(*args, **kwargs):
+        await asyncio.Event().wait()
+
+    client.set_control_value = _hang
+    client.set_control_values = _hang
+
+    new_client = FakeClient({"pwr": "1"})
+    # The reconnect triggered by the first timeout swaps the client in; make
+    # the replacement hang too so the second command also exercises the timeout.
+    new_client.set_control_value = _hang
+    new_client.set_control_values = _hang
+    with (
+        patch(
+            "custom_components.philips_airpurifier_coap.coordinator.COMMAND_TIMEOUT",
+            0,
+        ),
+        patch(
+            "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+            AsyncMock(return_value=new_client),
+        ),
+    ):
+        with pytest.raises(TimeoutError):
+            await coord.async_set_control_value("pwr", "0")
+        with pytest.raises(TimeoutError):
+            await coord.async_set_control_values({"pwr": "0"})
+        assert coord._reconnect_task is not None
+        # block_till_done does not wait for background tasks; await it directly.
+        await coord._reconnect_task
+
+    # The reconnect recovered the connection with a fresh client.
+    assert coord.client is new_client
+
+    await coord.async_shutdown()
+
+
+async def test_commands_pass_through_to_client(hass: HomeAssistant) -> None:
+    """The command helpers forward to the client within the timeout."""
+    client = FakeClient({"pwr": "1"})
+    coord = _make_coordinator(hass, client, {"pwr": "1"})
+
+    await coord.async_set_control_value("pwr", "0")
+    client.set_control_value.assert_awaited_once_with("pwr", "0")
+
+    await coord.async_set_control_values({"pwr": "0", "om": "1"})
+    client.set_control_values.assert_awaited_once_with(data={"pwr": "0", "om": "1"})
+
+    await coord.async_shutdown()
+
+
 async def test_reconnect_failure_marks_unavailable(hass: HomeAssistant) -> None:
     """A failed reconnect marks the coordinator as unavailable and retries."""
     client = FakeClient({"pwr": "1"}, timeout=1)

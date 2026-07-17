@@ -86,7 +86,7 @@ class PhilipsEntity(CoordinatorEntity[Coordinator]):
     async def _async_set_control_value(self, key: str, value: Any) -> None:
         """Send a single control value and optimistically update local state."""
         try:
-            await self.coordinator.client.set_control_value(key, value)
+            await self.coordinator.async_set_control_value(key, value)
         except Exception as ex:  # noqa: BLE001 - surface any client error to the user
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
@@ -99,7 +99,7 @@ class PhilipsEntity(CoordinatorEntity[Coordinator]):
     async def _async_set_control_values(self, data: dict[str, Any]) -> None:
         """Send several control values and optimistically update local state."""
         try:
-            await self.coordinator.client.set_control_values(data=data)
+            await self.coordinator.async_set_control_values(data=data)
         except Exception as ex:  # noqa: BLE001 - surface any client error to the user
             raise HomeAssistantError(
                 translation_domain=DOMAIN,

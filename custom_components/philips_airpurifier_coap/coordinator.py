@@ -39,6 +39,13 @@ MISSED_PACKAGE_COUNT = 3
 # Fallback reporting interval (seconds) until the device tells us its own.
 DEFAULT_TIMEOUT = 60
 
+# aioairctrl sends non-confirmable CoAP messages and never times out on its
+# own: a single lost UDP datagram would otherwise hang an await forever. Cap
+# every client round-trip so a lost packet degrades into a retryable error
+# instead of wedging the integration until Home Assistant is restarted.
+CONNECT_TIMEOUT = 30
+COMMAND_TIMEOUT = 30
+
 # Errors raised while decoding a single corrupt status packet. A truncated or
 # mangled UDP datagram makes ``bytes.fromhex()``/``json.loads()`` fail (both
 # ``ValueError``), the decrypted plaintext may not decode as UTF-8
@@ -186,6 +193,29 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
             _LOGGER.debug("Observation stopped for host %s: %s", self.host, ex)
             self.async_set_update_error(ex)
 
+    async def async_set_control_value(self, key: str, value: Any) -> None:
+        """Send a single control value, bounded by a timeout.
+
+        A lost datagram would otherwise hang the service call forever; on
+        timeout the connection is assumed dead and a reconnect is scheduled so
+        the next command works without waiting for the watchdog.
+        """
+        try:
+            async with asyncio.timeout(COMMAND_TIMEOUT):
+                await self.client.set_control_value(key, value)
+        except TimeoutError:
+            self._schedule_reconnect()
+            raise
+
+    async def async_set_control_values(self, data: dict[str, Any]) -> None:
+        """Send several control values, bounded by a timeout (see above)."""
+        try:
+            async with asyncio.timeout(COMMAND_TIMEOUT):
+                await self.client.set_control_values(data=data)
+        except TimeoutError:
+            self._schedule_reconnect()
+            raise
+
     @callback
     def _arm_watchdog(self) -> None:
         """(Re)arm the watchdog that reconnects when updates stop arriving."""
@@ -231,7 +261,8 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
             await self.client.shutdown()
 
         try:
-            self.client = await CoAPClient.create(self.host)
+            async with asyncio.timeout(CONNECT_TIMEOUT):
+                self.client = await CoAPClient.create(self.host)
         except asyncio.CancelledError:
             raise
         except Exception as ex:  # noqa: BLE001 - retry on any connection failure
