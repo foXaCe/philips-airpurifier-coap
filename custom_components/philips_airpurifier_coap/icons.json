@@ -149,7 +149,7 @@
       "oscillation": {
         "default": "pap:oscillate"
       },
-      "target_temp": {
+      "target_temperature": {
         "default": "mdi:thermometer"
       }
     },
@@ -211,7 +211,7 @@
       }
     },
     "sensor": {
-      "gas": {
+      "gas_level": {
         "default": "pap:gas"
       },
       "humidity": {
@@ -223,11 +223,37 @@
       "pm25": {
         "default": "pap:pm25b"
       },
+      "rssi": {
+        "default": "mdi:wifi-strength-off-outline",
+        "range": {
+          "-150": "mdi:wifi-strength-off-outline",
+          "-30": "mdi:wifi-strength-4",
+          "-67": "mdi:wifi-strength-3",
+          "-70": "mdi:wifi-strength-2",
+          "-80": "mdi:wifi-strength-1",
+          "-90": "mdi:wifi-strength-outline"
+        }
+      },
+      "temperature": {
+        "default": "mdi:thermometer-low",
+        "range": {
+          "0": "mdi:thermometer-low",
+          "17": "mdi:thermometer",
+          "23": "mdi:thermometer-high"
+        }
+      },
       "time_remaining": {
         "default": "mdi:timer"
       },
       "total_volatile_organic_compounds": {
         "default": "mdi:blur"
+      },
+      "water_level": {
+        "default": "pap:water_refill",
+        "range": {
+          "0": "pap:water_refill",
+          "10": "mdi:water"
+        }
       }
     },
     "switch": {

@@ -221,7 +221,7 @@
       "oscillation": {
         "name": "Oscillation"
       },
-      "target_temp": {
+      "target_temperature": {
         "name": "Target temperature"
       }
     },
@@ -275,7 +275,7 @@
       "active_carbon_filter": {
         "name": "Active carbon filter"
       },
-      "gas": {
+      "gas_level": {
         "name": "Gas"
       },
       "hepa_filter": {

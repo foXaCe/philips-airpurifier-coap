@@ -87,6 +87,10 @@ async def test_sensor_setup_and_native_value(hass: HomeAssistant, make_runtime) 
     assert pm25.unique_id == "AC3033-ABCD1234567890-pm25"
     assert pm25.native_value == 15
 
+    # The RSSI diagnostic sensor is disabled by default (Gold quality scale).
+    rssi_desc = next(d for d in sensor.SENSOR_TYPES if d.key == PhilipsApi.RSSI)
+    assert rssi_desc.entity_registry_enabled_default is False
+
 
 async def test_sensor_value_fn(hass: HomeAssistant, make_runtime) -> None:
     """The temperature value_fn divides the raw value by ten."""

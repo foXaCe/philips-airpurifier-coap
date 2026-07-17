@@ -39,6 +39,11 @@ _LOGGER = logging.getLogger(__name__)
 
 PARALLEL_UPDATES = 0
 
+# Icon-by-value tables for the filter sensors. The regular sensors use the
+# native range-based icons in icons.json (HA 2025.6+) instead, but the filter
+# sensors cannot: FILTER_PRE and FILTER_NANOPROTECT_CLEAN share the
+# "pre_filter" translation key (frozen — it is part of their unique_id) with
+# two different icon tables, and icons.json only allows one entry per key.
 IconMap = tuple[tuple[float, str], ...]
 
 
@@ -62,7 +67,6 @@ class PhilipsSensorEntityDescription(SensorEntityDescription):
     """Describe a Philips sensor entity."""
 
     value_fn: Callable[[Any, dict[str, Any]], StateType] | None = None
-    icon_map: IconMap | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -79,16 +83,19 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         key=PhilipsApi.INDOOR_ALLERGEN_INDEX,
         translation_key=FanAttributes.INDOOR_ALLERGEN_INDEX,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.NEW_INDOOR_ALLERGEN_INDEX,
         translation_key=FanAttributes.INDOOR_ALLERGEN_INDEX,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.NEW2_INDOOR_ALLERGEN_INDEX,
         translation_key=FanAttributes.INDOOR_ALLERGEN_INDEX,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.PM25,
@@ -96,6 +103,7 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         translation_key=FanAttributes.PM25,
         native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.NEW_PM25,
@@ -103,6 +111,7 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         translation_key=FanAttributes.PM25,
         native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.NEW2_PM25,
@@ -110,24 +119,28 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         translation_key=FanAttributes.PM25,
         native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.NEW2_GAS,
         translation_key=FanAttributes.GAS,
         native_unit_of_measurement="L",
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.TOTAL_VOLATILE_ORGANIC_COMPOUNDS,
         translation_key=FanAttributes.TOTAL_VOLATILE_ORGANIC_COMPOUNDS,
         native_unit_of_measurement="L",
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.HUMIDITY,
         device_class=SensorDeviceClass.HUMIDITY,
         translation_key=FanAttributes.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
         native_unit_of_measurement=PERCENTAGE,
     ),
     PhilipsSensorEntityDescription(
@@ -135,6 +148,7 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.HUMIDITY,
         translation_key=FanAttributes.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
         native_unit_of_measurement=PERCENTAGE,
     ),
     PhilipsSensorEntityDescription(
@@ -142,6 +156,7 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         translation_key=FanAttributes.TIME_REMAINING,
         state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
         native_unit_of_measurement=UnitOfTime.MINUTES,
     ),
     PhilipsSensorEntityDescription(
@@ -150,11 +165,7 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         translation_key=FanAttributes.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        icon_map=(
-            (0, "mdi:thermometer-low"),
-            (17, "mdi:thermometer"),
-            (23, "mdi:thermometer-high"),
-        ),
+        suggested_display_precision=0,
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.NEW2_TEMPERATURE,
@@ -162,23 +173,19 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         translation_key=FanAttributes.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_display_precision=1,
         value_fn=lambda value, _: value / 10,
-        icon_map=(
-            (0, "mdi:thermometer-low"),
-            (17, "mdi:thermometer"),
-            (23, "mdi:thermometer-high"),
-        ),
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.WATER_LEVEL,
         translation_key=FanAttributes.WATER_LEVEL,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda value, status: (
             0 if status.get(PhilipsApi.ERROR_CODE) in (32768, 49408) else value
         ),
-        icon_map=((0, ICON.WATER_REFILL), (10, "mdi:water")),
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.RSSI,
@@ -186,15 +193,9 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         translation_key=FanAttributes.RSSI,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+        suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
-        icon_map=(
-            (-150, "mdi:wifi-strength-off-outline"),
-            (-90, "mdi:wifi-strength-outline"),
-            (-80, "mdi:wifi-strength-1"),
-            (-70, "mdi:wifi-strength-2"),
-            (-67, "mdi:wifi-strength-3"),
-            (-30, "mdi:wifi-strength-4"),
-        ),
+        entity_registry_enabled_default=False,
     ),
 )
 
@@ -320,11 +321,6 @@ class PhilipsSensor(PhilipsEntity, SensorEntity):
             return self.entity_description.value_fn(value, self._device_status)
         return cast(StateType, value)
 
-    @property
-    def icon(self) -> str | None:
-        """Return the icon of the sensor."""
-        return _icon_from_map(self.native_value, self.entity_description.icon_map)
-
 
 class PhilipsFilterSensor(PhilipsEntity, SensorEntity):
     """Define a Philips AirPurifier filter sensor."""
@@ -332,6 +328,7 @@ class PhilipsFilterSensor(PhilipsEntity, SensorEntity):
     entity_description: PhilipsFilterEntityDescription
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_suggested_display_precision = 0
 
     def __init__(
         self,

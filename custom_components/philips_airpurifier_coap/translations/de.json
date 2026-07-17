@@ -6,11 +6,15 @@
       "model_unsupported": "Modell nicht unterstützt",
       "no_devices_found": "Keine Philips-Geräte im Netzwerk gefunden",
       "no_host": "IP-Adresse des Geräts konnte nicht ermittelt werden",
+      "reauth_different_device": "Das Gerät unter dieser Adresse ist nicht das ursprüngliche Gerät",
+      "reauth_successful": "Erneute Authentifizierung erfolgreich",
+      "reconfigure_different_device": "Das Gerät unter dieser Adresse ist nicht das ursprüngliche Gerät",
       "timeout": "Zeitüberschreitung, keine Verbindung zum Gerät möglich"
     },
     "error": {
       "connect": "Verbindung zum Gerät nicht möglich",
-      "host": "Geräteadresse ist erforderlich"
+      "host": "Geräteadresse ist erforderlich",
+      "timeout": "Zeitüberschreitung beim Verbinden mit dem Gerät"
     },
     "progress": {
       "scanning": "Suche nach Philips-Geräten im Netzwerk..."
@@ -31,6 +35,20 @@
         },
         "description": "{count} Gerät(e) im Netzwerk gefunden",
         "title": "Gerät auswählen"
+      },
+      "reauth_confirm": {
+        "data": {
+          "host": "Hostname oder IP-Adresse des Geräts"
+        },
+        "description": "Das Gerät {name} ist nicht erreichbar. Bitte überprüfen oder aktualisieren Sie die IP-Adresse.",
+        "title": "Gerät erneut authentifizieren"
+      },
+      "reconfigure": {
+        "data": {
+          "host": "Hostname oder IP-Adresse des Geräts"
+        },
+        "description": "IP-Adresse für {name} aktualisieren",
+        "title": "Gerät neu konfigurieren"
       },
       "user": {
         "description": "Wählen Sie, wie Sie Ihr Gerät hinzufügen möchten",
@@ -64,6 +82,23 @@
           "off": "Leer",
           "on": "Gefüllt"
         }
+      }
+    },
+    "button": {
+      "active_carbon_filter_reset": {
+        "name": "Aktivkohle Filter zurücksetzen"
+      },
+      "hepa_filter_reset": {
+        "name": "HEPA Filter zurücksetzen"
+      },
+      "nanoprotect_filter_reset": {
+        "name": "NanoProtect Filter zurücksetzen"
+      },
+      "pre_filter_reset": {
+        "name": "Vorfilter zurücksetzen"
+      },
+      "wick_reset": {
+        "name": "Befeuchtungselement zurücksetzen"
       }
     },
     "climate": {
@@ -186,7 +221,7 @@
       "oscillation": {
         "name": "Oszillation"
       },
-      "target_temp": {
+      "target_temperature": {
         "name": "Zieltemperatur"
       }
     },
@@ -240,7 +275,7 @@
       "active_carbon_filter": {
         "name": "Aktivkohle Filter"
       },
-      "gas": {
+      "gas_level": {
         "name": "Gas"
       },
       "hepa_filter": {
@@ -299,6 +334,36 @@
       "standby_sensors": {
         "name": "Standby Sensoren"
       }
+    }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "Der Befehl konnte nicht an {name} gesendet werden."
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "description": "Home Assistant kann das Philips-Gerät unter {host} nicht mehr erreichen und versucht weiterhin, die Verbindung wiederherzustellen. Prüfen Sie, ob das Gerät eingeschaltet und im Netzwerk erreichbar ist; falls sich seine IP-Adresse geändert hat, konfigurieren Sie die Integration neu oder fügen Sie sie erneut hinzu. Ein Aus- und Einschalten des Geräts hilft oft.",
+      "title": "Philips-Gerät unter {host} ist nicht erreichbar"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "filter_alert_threshold": "Schwellenwert für Filterwarnung (%)"
+        },
+        "data_description": {
+          "filter_alert_threshold": "Warnen, wenn ein Filter unter diesen Prozentsatz fällt"
+        },
+        "title": "Optionen"
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "configured_devices": "Konfigurierte Geräte",
+      "connected_devices": "Verbundene Geräte"
     }
   },
   "title": "Philips AirPurifier"

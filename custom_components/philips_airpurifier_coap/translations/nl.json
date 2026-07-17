@@ -6,11 +6,15 @@
       "model_unsupported": "Model wordt niet ondersteund",
       "no_devices_found": "Geen Philips-apparaten gevonden op het netwerk",
       "no_host": "Kon IP-adres van apparaat niet bepalen",
+      "reauth_different_device": "Het apparaat op dit adres is een ander apparaat dan het oorspronkelijke",
+      "reauth_successful": "Herauthenticatie geslaagd",
+      "reconfigure_different_device": "Het apparaat op dit adres is een ander apparaat dan het oorspronkelijke",
       "timeout": "Time-out, kan geen verbinding maken met het apparaat"
     },
     "error": {
       "connect": "Kan geen verbinding maken met het apparaat",
-      "host": "Apparaatadres is vereist"
+      "host": "Apparaatadres is vereist",
+      "timeout": "Time-out bij verbinden met het apparaat"
     },
     "progress": {
       "scanning": "Zoeken naar Philips-apparaten op het netwerk..."
@@ -31,6 +35,20 @@
         },
         "description": "{count} apparaat/apparaten gevonden op het netwerk",
         "title": "Apparaat selecteren"
+      },
+      "reauth_confirm": {
+        "data": {
+          "host": "Hostnaam of IP-adres van apparaat"
+        },
+        "description": "Het apparaat {name} is onbereikbaar. Controleer het IP-adres of werk het bij.",
+        "title": "Apparaat opnieuw authenticeren"
+      },
+      "reconfigure": {
+        "data": {
+          "host": "Hostnaam of IP-adres van apparaat"
+        },
+        "description": "Werk het IP-adres van {name} bij",
+        "title": "Apparaat opnieuw configureren"
       },
       "user": {
         "description": "Kies hoe je je apparaat wilt toevoegen",
@@ -64,6 +82,23 @@
           "off": "Leeg",
           "on": "Niet leeg"
         }
+      }
+    },
+    "button": {
+      "active_carbon_filter_reset": {
+        "name": "Actieve koolstoffilter resetten"
+      },
+      "hepa_filter_reset": {
+        "name": "HEPA-filter resetten"
+      },
+      "nanoprotect_filter_reset": {
+        "name": "NanoProtect-filter resetten"
+      },
+      "pre_filter_reset": {
+        "name": "Voorfilter resetten"
+      },
+      "wick_reset": {
+        "name": "Lont resetten"
       }
     },
     "climate": {
@@ -186,7 +221,7 @@
       "oscillation": {
         "name": "Oscillatie"
       },
-      "target_temp": {
+      "target_temperature": {
         "name": "Doeltemperatuur"
       }
     },
@@ -240,7 +275,7 @@
       "active_carbon_filter": {
         "name": "Actieve koolstoffilter"
       },
-      "gas": {
+      "gas_level": {
         "name": "Gas"
       },
       "hepa_filter": {
@@ -299,6 +334,36 @@
       "standby_sensors": {
         "name": "Stand-by sensoren"
       }
+    }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "Kan de opdracht niet naar {name} versturen."
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "description": "Home Assistant kan het Philips-apparaat op {host} niet meer bereiken en blijft proberen opnieuw verbinding te maken. Controleer of het apparaat is ingeschakeld en bereikbaar is in het netwerk; als het IP-adres is gewijzigd, configureer de integratie opnieuw of voeg deze opnieuw toe. Het apparaat uit- en weer aanzetten helpt vaak.",
+      "title": "Philips-apparaat op {host} is onbereikbaar"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "filter_alert_threshold": "Drempelwaarde filterwaarschuwing (%)"
+        },
+        "data_description": {
+          "filter_alert_threshold": "Waarschuwen wanneer een filter onder dit percentage komt"
+        },
+        "title": "Opties"
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "configured_devices": "Geconfigureerde apparaten",
+      "connected_devices": "Verbonden apparaten"
     }
   },
   "title": "Philips Luchtreiniger"

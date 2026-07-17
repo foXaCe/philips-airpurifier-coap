@@ -7,7 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Home Assistant 2025.12.0 or newer is now required** (was 2024.12.0), and
+  Python 3.13+ accordingly. This enables the native platform features below.
+- Saving the integration options now reloads the entry through the options
+  flow itself (`OptionsFlowWithReload`) instead of a global update listener.
+  This removes the double reload that reauth, reconfigure and rediscovery
+  triggered — a pattern Home Assistant deprecated in 2026.6 and will reject
+  in 2026.12.
+- Value-dependent sensor icons (temperature, water level, Wi-Fi signal) moved
+  from Python code to native range-based icon translations in `icons.json`
+  (HA 2025.6+). The filter sensors keep the in-code mechanism because two of
+  them share the frozen `pre_filter` translation key with different icon
+  tables.
+- All numeric sensors now declare an explicit `suggested_display_precision`.
+- The Wi-Fi signal (RSSI) diagnostic sensor is disabled by default for new
+  installations, matching Home Assistant core conventions. Existing entities
+  are not affected.
+- The manifest now declares `"quality_scale": "gold"`.
+
 ### Fixed
+- The gas/TVOC sensor (`gas_level`) and the target temperature number
+  (`target_temperature`) were displayed without a name (literally `None` in
+  the UI): their translation keys had been renamed in the code without
+  updating `strings.json`, the translation files and `icons.json`. A new test
+  now enforces code ↔ translations parity so this cannot regress.
+- The bg, de, es, nl, ro and sk translations caught up on the 23 keys added
+  in earlier releases (options, reauth/reconfigure steps, repair issue,
+  filter-reset buttons, system health).
 - The integration could permanently lose the device — no more status updates
   and every command failing — until Home Assistant was restarted. `aioairctrl`
   sends non-confirmable CoAP messages without any timeout, so a single lost UDP

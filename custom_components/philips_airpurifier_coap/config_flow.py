@@ -14,7 +14,7 @@ from aioairctrl import CoAPClient
 import voluptuous as vol
 
 from homeassistant import config_entries, exceptions
-from homeassistant.config_entries import ConfigFlowResult, OptionsFlow
+from homeassistant.config_entries import ConfigFlowResult, OptionsFlowWithReload
 from homeassistant.const import CONF_HOST, CONF_NAME
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
@@ -127,40 +127,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.debug("async_step_dhcp: called, found: %s", discovery_info)
 
         self._host = discovery_info.ip
-        # A device already configured at this IP re-announces itself over DHCP on
-        # lease renewal. Probing it again would time out because the device only
-        # accepts one CoAP connection, already held by the coordinator, so bail
-        # out early instead of logging a spurious "doesn't answer" warning.
-        self._async_abort_entries_match({CONF_HOST: self._host})
-        _LOGGER.debug("trying to configure host: %s", self._host)
-
-        try:
-            status = await self._fetch_device_status()
-            _LOGGER.debug("status for host %s is: %s", self._host, status)
-        except TimeoutError:
-            _LOGGER.warning(
-                "Timeout, host %s looks like a Philips AirPurifier but doesn't answer",
-                self._host,
-            )
-            return self.async_abort(reason="model_unsupported")
-        except Exception as ex:
-            _LOGGER.warning("Failed to connect: %s", ex)
-            return self.async_abort(reason="timeout")
-
-        self._extract_device_info(status)
-
-        resolved_model = self._resolve_model(self._model)
-        if resolved_model is None:
-            return self.async_abort(reason="model_unsupported")
-        self._model = resolved_model
-
-        await self.async_set_unique_id(self._device_id)
-        self._abort_if_unique_id_configured(updates={CONF_HOST: self._host})
-
-        self.context.update({"title_placeholders": {CONF_NAME: f"{self._model} {self._name}"}})
-
-        _LOGGER.debug("waiting for async_step_confirm")
-        return await self.async_step_confirm()
+        return await self._async_probe_discovered_device()
 
     async def async_step_ssdp(self, discovery_info: SsdpServiceInfo) -> ConfigFlowResult:
         """Handle initial step of SSDP discovery flow."""
@@ -177,8 +144,18 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.warning("Could not extract host from SSDP discovery info")
             return self.async_abort(reason="no_host")
 
-        # Skip devices already configured at this IP (see async_step_dhcp): a
-        # redundant probe would time out against the coordinator's live connection.
+        return await self._async_probe_discovered_device()
+
+    async def _async_probe_discovered_device(self) -> ConfigFlowResult:
+        """Probe the discovered host at ``self._host`` and move to confirm.
+
+        Shared tail of the DHCP and SSDP discovery steps.
+        """
+        # A device already configured at this IP re-announces itself over DHCP
+        # on lease renewal (or via SSDP alive messages). Probing it again would
+        # time out because the device only accepts one CoAP connection, already
+        # held by the coordinator, so bail out early instead of logging a
+        # spurious "doesn't answer" warning.
         self._async_abort_entries_match({CONF_HOST: self._host})
         _LOGGER.debug("trying to configure host: %s", self._host)
 
@@ -486,8 +463,13 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
 
-class PhilipsOptionsFlow(OptionsFlow):
-    """Handle options for the Philips AirPurifier integration."""
+class PhilipsOptionsFlow(OptionsFlowWithReload):
+    """Handle options for the Philips AirPurifier integration.
+
+    Inherits the automatic reload after the options are saved, so the entry
+    setup does not need its own update listener (HA deprecated combining an
+    update listener with the config-flow reload helpers in 2026.6).
+    """
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the integration options."""
