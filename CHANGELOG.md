@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- The integration could permanently lose the device — no more status updates
+  and every command failing — until Home Assistant was restarted. `aioairctrl`
+  sends non-confirmable CoAP messages without any timeout, so a single lost UDP
+  datagram during a watchdog reconnect left the coordinator waiting forever
+  with the watchdog disarmed. Reconnects are now bounded by a 30s timeout and
+  fall back to the normal retry loop. Control commands are bounded by the same
+  timeout: instead of hanging the service call forever, they now fail with an
+  error and immediately trigger a reconnect so the next command works.
+
 ## [0.39.1] - 2026-07-01
 
 ### Fixed
