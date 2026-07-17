@@ -30,18 +30,25 @@ Philips device ──CoAP observe──▶ aioairctrl.CoAPClient
 
 | File | Role |
 |------|------|
-| `__init__.py` | `async_setup` (serves the custom SVG icons), `async_setup_entry`/`async_unload_entry`, the options-reload listener and the deferred MAC lookup. |
+| `__init__.py` | `async_setup` (serves the custom SVG icons), `async_setup_entry`/`async_unload_entry` and the deferred MAC lookup. There is deliberately no entry update listener: each modification path carries its own single reload (options via `OptionsFlowWithReload`, reauth/reconfigure via `async_update_reload_and_abort`, rediscovery via `_abort_if_unique_id_configured(updates=…)`) — HA 2026.6 deprecated combining a reloading listener with those helpers. |
 | `const.py` | **Pure constants only**: `DOMAIN`, the `ICON`/`FanModel`/`FanFunction`/`FanAttributes`/`PresetMode` enums, the `PhilipsApi` field-name catalogue and the `PhilipsConfigEntry` type alias. |
 | `model.py` | `DeviceInformation` dataclass and the `DeviceStatus` type alias. |
 | `coordinator.py` | The push coordinator + reconnect watchdog. |
 | `config_entry_data.py` | `ConfigEntryData` — the object stored in `entry.runtime_data`. |
-| `config_flow.py` | `ConfigFlow` (menu/scan/manual/DHCP/SSDP, reauth, reconfigure) + `PhilipsOptionsFlow`. |
+| `config_flow.py` | `ConfigFlow` (menu/scan/manual/DHCP/SSDP, reauth, reconfigure) + `PhilipsOptionsFlow` (an `OptionsFlowWithReload`: the entry reloads automatically when options are saved). |
 | `diagnostics.py` | Redacted config-entry diagnostics. |
 | `logbook.py` | Human-readable descriptions for the `philips_filter_alert` event. |
 | `system_health.py` | Configured/connected device counts for the **System health** page. |
 | `helpers.py` | Pure helpers: `extract_model`/`extract_name` and the optional network scan. |
 | `devices/` | One class per device **model**, grouped by generation. |
 | `<platform>.py` | One file per entity platform; each owns its `EntityDescription` subclass + descriptions tuple. |
+
+Value-dependent icons live in `icons.json` as native range-based icon
+translations (HA 2025.6+). The only exception is the filter sensors in
+`sensor.py`: `FILTER_PRE` and `FILTER_NANOPROTECT_CLEAN` share the
+`pre_filter` translation key (frozen — it is part of their unique_id) with two
+different icon tables, which icons.json cannot express, so they keep the
+in-code `icon_map` mechanism.
 
 ## The device model
 
