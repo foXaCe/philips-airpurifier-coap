@@ -1,0 +1,16 @@
+# Gitleaks configuration — extends the default ruleset.
+#
+# The scheduled full-history scan flags the fake Philips device IDs and
+# entity-description keys hardcoded in the test fixtures as generic-api-key
+# findings. They are synthetic test data (e.g. "ABCD1234567890"), not secrets,
+# so allowlist those exact line patterns instead of excluding tests/ entirely.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fake device IDs and entity keys in the test fixtures"
+regexTarget = "line"
+regexes = [
+  '''PhilipsApi\.DEVICE_ID: "[A-Za-z0-9]{2,20}"''',
+  '''key="plainkey", translation_key=''',
+]
