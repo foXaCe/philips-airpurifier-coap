@@ -14,6 +14,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
+import homeassistant.const as _ha_const
 from homeassistant.const import (
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
@@ -32,15 +33,11 @@ from .devices import PhilipsEntity, collect_class_attribute, model_to_class
 # (removal planned for 2027.8) in favour of UnitOfDensity, which only exists
 # since HA 2026.7 — fall back for the supported 2025.12–2026.6 range. Both
 # spell the identical unit string, so recorded statistics are unaffected.
-_MICROGRAMS_PER_CUBIC_METER: str
-try:
-    from homeassistant.const import UnitOfDensity
-
-    _MICROGRAMS_PER_CUBIC_METER = UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
-except ImportError:  # pragma: no cover - HA < 2026.7
-    from homeassistant.const import (
-        CONCENTRATION_MICROGRAMS_PER_CUBIC_METER as _MICROGRAMS_PER_CUBIC_METER,
-    )
+_MICROGRAMS_PER_CUBIC_METER: str = (
+    _ha_const.UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
+    if hasattr(_ha_const, "UnitOfDensity")
+    else _ha_const.CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+)
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
