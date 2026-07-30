@@ -15,7 +15,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     EntityCategory,
@@ -28,6 +27,20 @@ from homeassistant.helpers.typing import StateType
 
 from .const import ICON, FanAttributes, PhilipsApi
 from .devices import PhilipsEntity, collect_class_attribute, model_to_class
+
+# CONCENTRATION_MICROGRAMS_PER_CUBIC_METER is deprecated since HA 2026.8
+# (removal planned for 2027.8) in favour of UnitOfDensity, which only exists
+# since HA 2026.7 — fall back for the supported 2025.12–2026.6 range. Both
+# spell the identical unit string, so recorded statistics are unaffected.
+_MICROGRAMS_PER_CUBIC_METER: str
+try:
+    from homeassistant.const import UnitOfDensity
+
+    _MICROGRAMS_PER_CUBIC_METER = UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
+except ImportError:  # pragma: no cover - HA < 2026.7
+    from homeassistant.const import (
+        CONCENTRATION_MICROGRAMS_PER_CUBIC_METER as _MICROGRAMS_PER_CUBIC_METER,
+    )
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -101,7 +114,7 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         key=PhilipsApi.PM25,
         device_class=SensorDeviceClass.PM25,
         translation_key=FanAttributes.PM25,
-        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        native_unit_of_measurement=_MICROGRAMS_PER_CUBIC_METER,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
     ),
@@ -109,7 +122,7 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         key=PhilipsApi.NEW_PM25,
         device_class=SensorDeviceClass.PM25,
         translation_key=FanAttributes.PM25,
-        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        native_unit_of_measurement=_MICROGRAMS_PER_CUBIC_METER,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
     ),
@@ -117,7 +130,7 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         key=PhilipsApi.NEW2_PM25,
         device_class=SensorDeviceClass.PM25,
         translation_key=FanAttributes.PM25,
-        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        native_unit_of_measurement=_MICROGRAMS_PER_CUBIC_METER,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
     ),
