@@ -5,6 +5,15 @@ All notable changes to the Philips AirPurifier CoAP integration will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Adopt `UnitOfDensity.MICROGRAMS_PER_CUBIC_METER` for the PM2.5 sensors:
+  HA 2026.8 deprecates `CONCENTRATION_MICROGRAMS_PER_CUBIC_METER` (removal in
+  2027.8) and logged a repair-style warning. A fallback keeps HA 2025.12-2026.6
+  working, where the new enumerator does not exist yet. The unit string is
+  unchanged, so recorded statistics are unaffected.
+
 ## [0.40.0] - 2026-07-17
 
 ### Changed
