@@ -19,7 +19,7 @@ except ImportError:  # pragma: no cover - defensive, library internals may move
 
 
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
@@ -70,12 +70,17 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
     def __init__(
         self,
         hass: HomeAssistant,
-        client: CoAPClient,
+        client: CoAPClient | None,
         host: str,
         status: DeviceStatus | None = None,
         config_entry: PhilipsConfigEntry | None = None,
     ) -> None:
-        """Initialize the coordinator."""
+        """Initialize the coordinator.
+
+        ``client`` may be ``None`` when the connection is deferred to a
+        background task (see :meth:`async_connect`) so that setup does not
+        block Home Assistant startup on the network round-trip.
+        """
         super().__init__(hass, _LOGGER, name=DOMAIN, config_entry=config_entry)
 
         self.client = client
@@ -93,8 +98,21 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
         """Return the latest known status (compatibility alias for ``data``)."""
         return self.data or {}
 
+    async def async_connect(self) -> None:
+        """Create the CoAP client in the background and start observing.
+
+        Called from ``async_setup_entry`` once the platforms are set up so that
+        the connection handshake never blocks Home Assistant startup. Entities
+        hold the last known status until the first status report arrives.
+        """
+        if self.client is not None:
+            return
+        await self._async_reconnect()
+
     async def async_first_refresh(self) -> None:
         """Fetch the initial status before the platforms are set up."""
+        if self.client is None:
+            raise ConfigEntryNotReady(f"No CoAP client for host {self.host}")
         try:
             status, timeout = await self.client.get_status()
         except Exception as ex:
@@ -118,8 +136,9 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
             self._reconnect_task.cancel()
             self._reconnect_task = None
 
-        with contextlib.suppress(Exception):
-            await self.client.shutdown()
+        if self.client is not None:
+            with contextlib.suppress(Exception):
+                await self.client.shutdown()
 
         await super().async_shutdown()
 
@@ -145,6 +164,10 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
     @callback
     def _start_observing(self) -> None:
         """Start the CoAP observation task and arm the watchdog."""
+        if self.client is None:
+            # Connection is still being established in the background; it will
+            # call _start_observing again once the client is ready.
+            return
         if self._observe_task is not None:
             self._observe_task.cancel()
 
@@ -164,6 +187,8 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
 
     async def _async_observe_status(self) -> None:
         """Forward every observed status update to the entities."""
+        if self.client is None:  # pragma: no cover - guarded by _start_observing
+            return
         try:
             async for status in self.client.observe_status():
                 self.async_set_updated_data(status)
@@ -200,6 +225,8 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
         timeout the connection is assumed dead and a reconnect is scheduled so
         the next command works without waiting for the watchdog.
         """
+        if self.client is None:
+            raise HomeAssistantError("Device is not connected")
         try:
             async with asyncio.timeout(COMMAND_TIMEOUT):
                 await self.client.set_control_value(key, value)
@@ -209,6 +236,8 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
 
     async def async_set_control_values(self, data: dict[str, Any]) -> None:
         """Send several control values, bounded by a timeout (see above)."""
+        if self.client is None:
+            raise HomeAssistantError("Device is not connected")
         try:
             async with asyncio.timeout(COMMAND_TIMEOUT):
                 await self.client.set_control_values(data=data)
@@ -257,8 +286,14 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
     async def _async_reconnect(self) -> None:
         """Recreate the CoAP client and resume observing."""
         self._reconnecting = True
-        with contextlib.suppress(Exception):
-            await self.client.shutdown()
+        # Drop the old client before shutting it down so a failed reconnect
+        # leaves ``client`` as None: control methods then raise a clean
+        # "Device is not connected" instead of using a closed client.
+        old_client = self.client
+        self.client = None
+        if old_client is not None:
+            with contextlib.suppress(Exception):
+                await old_client.shutdown()
 
         try:
             async with asyncio.timeout(CONNECT_TIMEOUT):
