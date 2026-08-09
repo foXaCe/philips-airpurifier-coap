@@ -371,6 +371,10 @@ async def test_reconnect_failure_marks_unavailable(hass: HomeAssistant) -> None:
         await hass.async_block_till_done()
 
     assert coord.last_update_success is False
+    # The old client was dropped, so commands now fail cleanly instead of
+    # using a shut-down client.
+    assert coord.client is None
+    client.shutdown.assert_awaited()
 
     await coord.async_shutdown()
 

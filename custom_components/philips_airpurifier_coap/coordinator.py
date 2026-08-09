@@ -286,9 +286,14 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
     async def _async_reconnect(self) -> None:
         """Recreate the CoAP client and resume observing."""
         self._reconnecting = True
-        if self.client is not None:
+        # Drop the old client before shutting it down so a failed reconnect
+        # leaves ``client`` as None: control methods then raise a clean
+        # "Device is not connected" instead of using a closed client.
+        old_client = self.client
+        self.client = None
+        if old_client is not None:
             with contextlib.suppress(Exception):
-                await self.client.shutdown()
+                await old_client.shutdown()
 
         try:
             async with asyncio.timeout(CONNECT_TIMEOUT):
