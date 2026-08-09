@@ -29,7 +29,7 @@
 [community_forum]: https://community.home-assistant.io/t/philips-air-purifier/53030
 [community_forum_shield]: https://img.shields.io/badge/Community-Forum-41BDF5.svg?style=for-the-badge&logo=homeassistant&logoColor=white
 
-This is a `Local Push` integration for Philips airpurifiers and humidifiers.
+This is a `Local Push` integration for Philips air purifiers and humidifiers.
 Currently only encrypted-CoAP is implemented.
 
 
