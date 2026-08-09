@@ -156,19 +156,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: PhilipsConfigEntry) -> b
     name = entry.data[CONF_NAME]
     device_id = entry.data[CONF_DEVICE_ID]
 
-    _LOGGER.debug("async_setup_entry called for host %s", host)
-
-    # Create CoAP client with reduced timeout for faster startup
-    try:
-        client = await asyncio.wait_for(CoAPClient.create(host), timeout=5)
-        _LOGGER.debug("got a valid client for host %s", host)
-    except TimeoutError as ex:
-        _LOGGER.warning("Timeout connecting to host %s after 5s", host)
-        raise ConfigEntryNotReady from ex
-    except Exception as ex:
-        _LOGGER.warning("Failed to connect to host %s: %s", host, ex)
-        raise ConfigEntryNotReady from ex
-
     # Defer MAC lookup - run in background after setup to avoid blocking startup
     async def get_mac_deferred() -> None:
         """Get MAC address in background and update device info."""
@@ -180,11 +167,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: PhilipsConfigEntry) -> b
         except Exception as ex:
             _LOGGER.debug("MAC lookup failed for %s: %s", host, ex)
 
-    # Check if we have status data, it will be missing in old entries
+    _LOGGER.debug("async_setup_entry called for host %s", host)
+
+    # Old entries may not have a stored status yet. Fetch it before the
+    # platforms are set up so they can initialise from real data.
     if CONF_STATUS not in entry.data:
         _LOGGER.warning("No status data found for model %s, trying to fetch it", model)
+        try:
+            client = await asyncio.wait_for(CoAPClient.create(host), timeout=5)
+        except TimeoutError as ex:
+            _LOGGER.warning("Timeout connecting to host %s after 5s", host)
+            raise ConfigEntryNotReady from ex
+        except Exception as ex:
+            _LOGGER.warning("Failed to connect to host %s: %s", host, ex)
+            raise ConfigEntryNotReady from ex
         coordinator = Coordinator(hass, client, host, None, config_entry=entry)
-        # Add timeout to first refresh to avoid blocking too long
         try:
             await asyncio.wait_for(coordinator.async_first_refresh(), timeout=10)
         except TimeoutError as ex:
@@ -197,8 +194,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: PhilipsConfigEntry) -> b
         new_data[CONF_STATUS] = status
         hass.config_entries.async_update_entry(entry, data=new_data)
     else:
+        # Modern entries carry the last known status, so the CoAP handshake can
+        # run in the background instead of blocking Home Assistant startup.
         status = entry.data[CONF_STATUS]
-        coordinator = Coordinator(hass, client, host, status, config_entry=entry)
+        coordinator = Coordinator(hass, None, host, status, config_entry=entry)
 
     # Initialize device info without MAC (will be updated in background)
     device_information = DeviceInformation(
@@ -210,10 +209,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: PhilipsConfigEntry) -> b
         device_information=device_information,
         coordinator=coordinator,
         latest_status=status,
-        client=client,
+        client=coordinator.client,
     )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # Establish the CoAP connection in the background so a slow or unreachable
+    # device never delays startup. The coordinator starts observing as soon as
+    # the client is ready.
+    if coordinator.client is None:
+        entry.async_create_background_task(
+            hass, coordinator.async_connect(), f"philips_connect_{host}"
+        )
 
     # Start deferred MAC lookup in background (non-blocking, tied to the entry)
     entry.async_create_background_task(hass, get_mac_deferred(), "philips_mac_lookup")

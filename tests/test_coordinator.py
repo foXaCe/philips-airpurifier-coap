@@ -80,6 +80,14 @@ async def test_first_refresh_failure_raises_not_ready(hass: HomeAssistant) -> No
         await coord.async_first_refresh()
 
 
+async def test_first_refresh_without_client_raises_not_ready(hass: HomeAssistant) -> None:
+    """async_first_refresh with no client yet must raise ConfigEntryNotReady."""
+    coord = Coordinator(hass, None, "1.2.3.4", None)
+
+    with pytest.raises(ConfigEntryNotReady):
+        await coord.async_first_refresh()
+
+
 async def test_push_update_propagates(hass: HomeAssistant) -> None:
     """A pushed status update should reach the listeners via the coordinator."""
     client = FakeClient({"pwr": "1"})
@@ -291,6 +299,56 @@ async def test_commands_pass_through_to_client(hass: HomeAssistant) -> None:
 
     await coord.async_set_control_values({"pwr": "0", "om": "1"})
     client.set_control_values.assert_awaited_once_with(data={"pwr": "0", "om": "1"})
+
+    await coord.async_shutdown()
+
+
+async def test_async_connect_creates_client_and_observes(hass: HomeAssistant) -> None:
+    """async_connect with a None client creates the client and starts observing."""
+    new_client = FakeClient({"pwr": "1"})
+    coord = Coordinator(hass, None, "1.2.3.4", {"pwr": "1"})
+
+    coord.async_add_listener(lambda: None)
+    await hass.async_block_till_done()
+    assert coord._observe_task is None  # not connected yet, no observe
+
+    with patch(
+        "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+        AsyncMock(return_value=new_client),
+    ) as mock_create:
+        await coord.async_connect()
+        await hass.async_block_till_done()
+
+    mock_create.assert_awaited_once_with("1.2.3.4")
+    assert coord.client is new_client
+    assert coord._observe_task is not None
+
+    await coord.async_shutdown()
+
+
+async def test_commands_without_client_raise(hass: HomeAssistant) -> None:
+    """Commands before the deferred connection is ready fail cleanly."""
+    from homeassistant.exceptions import HomeAssistantError
+
+    coord = Coordinator(hass, None, "1.2.3.4", {"pwr": "1"})
+
+    with pytest.raises(HomeAssistantError):
+        await coord.async_set_control_value("pwr", "0")
+    with pytest.raises(HomeAssistantError):
+        await coord.async_set_control_values({"pwr": "0"})
+
+    await coord.async_shutdown()
+
+
+async def test_async_connect_is_idempotent(hass: HomeAssistant) -> None:
+    """async_connect with an existing client does nothing."""
+    client = FakeClient({"pwr": "1"})
+    coord = _make_coordinator(hass, client, {"pwr": "1"})
+
+    await coord.async_connect()
+
+    assert coord.client is client
+    client.shutdown.assert_not_awaited()
 
     await coord.async_shutdown()
 

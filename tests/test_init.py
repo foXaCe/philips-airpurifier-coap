@@ -99,11 +99,11 @@ async def test_setup_without_status_fetches_it(
     assert CONF_STATUS in entry.data
 
 
-async def test_setup_retry_on_connection_error(
+async def test_setup_without_status_retry_on_connection_error(
     hass: HomeAssistant, bypass_integration_deps
 ) -> None:
-    """A connection failure puts the entry into the retry state."""
-    entry = _make_entry()
+    """A legacy entry (no stored status) retries when it cannot connect."""
+    entry = _make_entry(with_status=False)
     entry.add_to_hass(hass)
     with (
         patch(
@@ -115,6 +115,31 @@ async def test_setup_retry_on_connection_error(
         assert not await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
     assert entry.state is ConfigEntryState.SETUP_RETRY
+
+
+async def test_setup_with_status_defers_connection_failure(
+    hass: HomeAssistant, bypass_integration_deps
+) -> None:
+    """A modern entry loads immediately; a failed deferred connect marks it unavailable."""
+    import homeassistant.helpers.issue_registry as ir
+
+    entry = _make_entry()
+    entry.add_to_hass(hass)
+    with (
+        patch(
+            "custom_components.philips_airpurifier_coap.CoAPClient.create",
+            AsyncMock(side_effect=OSError("boom")),
+        ),
+        patch("custom_components.philips_airpurifier_coap.async_setup", return_value=True),
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+    assert entry.state is ConfigEntryState.LOADED
+    assert not entry.runtime_data.coordinator.last_update_success
+    assert (
+        ir.async_get(hass).async_get_issue(DOMAIN, f"device_unreachable_{entry.data[CONF_HOST]}")
+        is not None
+    )
 
 
 async def test_unload(hass: HomeAssistant, bypass_integration_deps) -> None:

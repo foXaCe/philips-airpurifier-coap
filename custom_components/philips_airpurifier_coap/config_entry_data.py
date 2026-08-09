@@ -17,6 +17,6 @@ class ConfigEntryData:
     """Runtime data for a Philips AirPurifier config entry."""
 
     device_information: DeviceInformation
-    client: CoAPClient
+    client: CoAPClient | None
     coordinator: Coordinator
     latest_status: DeviceStatus | None = field(default=None)

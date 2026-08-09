@@ -135,8 +135,8 @@ async def test_async_get_mac_ipv6(hass: HomeAssistant) -> None:
 
 
 async def test_setup_generic_connection_error(hass: HomeAssistant, bypass_integration_deps) -> None:
-    """A non-timeout connection failure also yields a retry."""
-    entry = _make_entry()
+    """A legacy entry (no stored status) retries on a non-timeout connection failure."""
+    entry = _make_entry(with_status=False)
     entry.add_to_hass(hass)
     with (
         patch(
