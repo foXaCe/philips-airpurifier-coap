@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.40.3] - 2026-08-09
+
+### Changed
+- Repo housekeeping only (no integration code changes): add `.python-version`
+  and `info.md`, sync `pyproject.toml` to the manifest version, add a
+  concurrency guard to the release publish workflow, and fix the
+  "air purifiers" wording in user-facing docs.
+
 ## [0.40.2] - 2026-08-09
 
 ### Changed
