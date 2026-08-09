@@ -1,6 +1,6 @@
 # Philips AirPurifier (with CoAP)
 
-This is a `Local Push` integration for Philips airpurifiers and humidifiers.
+This is a `Local Push` integration for Philips air purifiers and humidifiers.
 Currently only encrypted-CoAP is implemented.
 
 ## Features
