@@ -5,6 +5,20 @@ All notable changes to the Philips AirPurifier CoAP integration will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.2] - 2026-08-09
+
+### Changed
+- Establish the CoAP connection in a background task after the platforms are
+  set up, instead of blocking `async_setup_entry` on the network handshake
+  (up to 5s, 10s more for legacy entries). Home Assistant now finishes booting
+  even when the purifier is slow or unreachable.
+
+### Fixed
+- When the device is unreachable at boot, the entry now loads immediately and
+  the device is marked unavailable with a `device_unreachable` repair issue
+  (the watchdog keeps retrying in the background), instead of holding the
+  whole entry in `SETUP_RETRY` and delaying startup.
+
 ## [0.40.1] - 2026-07-30
 
 ### Fixed
