@@ -102,6 +102,7 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
         self._timeout: int = DEFAULT_TIMEOUT
         self._cancel_watchdog: CALLBACK_TYPE | None = None
         self._reconnect_delay: float = RECONNECT_RETRY_DELAY
+        self._watchdog_delay: float | None = None
 
     @property
     def status(self) -> DeviceStatus:
@@ -264,9 +265,10 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
         interval, used for the fast reconnect backoff after a failed attempt.
         """
         self._cancel_watchdog_if_needed()
+        self._watchdog_delay = delay if delay is not None else self._timeout * MISSED_PACKAGE_COUNT
         self._cancel_watchdog = async_call_later(
             self.hass,
-            delay if delay is not None else self._timeout * MISSED_PACKAGE_COUNT,
+            self._watchdog_delay,
             self._handle_watchdog_timeout,
         )
 
@@ -283,7 +285,7 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
         _LOGGER.debug(
             "No update from host %s within %ss, reconnecting",
             self.host,
-            self._timeout * MISSED_PACKAGE_COUNT,
+            self._watchdog_delay,
         )
         self._schedule_reconnect()
 
