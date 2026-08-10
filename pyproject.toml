@@ -1,6 +1,6 @@
 [project]
 name = "philips-airpurifier-coap"
-version = "0.40.3"
+version = "0.40.4"
 description = "Home Assistant custom integration for Philips Air Purifiers using CoAP"
 readme = "README.md"
 license = {text = "MIT"}

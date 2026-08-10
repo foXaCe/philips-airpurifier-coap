@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.40.4] - 2026-08-10
+
+### Fixed
+- **Reconnect recovery after a device CoAP wedge**: failed reconnects now retry
+  after 30s with an exponential backoff (30 → 60 → 120 → 180s max), reset as
+  soon as a status update arrives. A power-cycled device is picked up in ~30s
+  instead of up to 3 minutes.
+- **Clear timeout logging**: a timed-out CoAP connect is now logged as
+  `timed out after 30s (no CoAP answer)` with a descriptive message, instead of
+  an empty `Reconnect failed: `.
+- **Log the actually armed watchdog delay** on reconnect retries instead of
+  always reporting the full 180s interval.
+- **Release pipeline**: `Publish Release` now creates the GitHub release from
+  the matching CHANGELOG section when no draft exists, instead of logging
+  "nothing to publish" and leaving the release missing.
+
 ## [0.40.3] - 2026-08-09
 
 ### Changed
