@@ -46,6 +46,15 @@ DEFAULT_TIMEOUT = 60
 CONNECT_TIMEOUT = 30
 COMMAND_TIMEOUT = 30
 
+# Reconnect backoff after a failed connection attempt. The Philips firmware is
+# known to wedge its CoAP server until a power cycle, so a failed reconnect
+# should retry quickly at first (the user may be power-cycling the device) and
+# back off exponentially to avoid hammering a dead endpoint, capped at the
+# watchdog interval. The backoff resets as soon as a status update arrives.
+RECONNECT_RETRY_DELAY = 30
+RECONNECT_BACKOFF_FACTOR = 2
+RECONNECT_BACKOFF_MAX = 180
+
 # Errors raised while decoding a single corrupt status packet. A truncated or
 # mangled UDP datagram makes ``bytes.fromhex()``/``json.loads()`` fail (both
 # ``ValueError``), the decrypted plaintext may not decode as UTF-8
@@ -92,6 +101,8 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
         self._reconnecting = False
         self._timeout: int = DEFAULT_TIMEOUT
         self._cancel_watchdog: CALLBACK_TYPE | None = None
+        self._reconnect_delay: float = RECONNECT_RETRY_DELAY
+        self._watchdog_delay: float | None = None
 
     @property
     def status(self) -> DeviceStatus:
@@ -192,6 +203,7 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
         try:
             async for status in self.client.observe_status():
                 self.async_set_updated_data(status)
+                self._reconnect_delay = RECONNECT_RETRY_DELAY
                 self._arm_watchdog()
         except asyncio.CancelledError:
             raise
@@ -246,12 +258,17 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
             raise
 
     @callback
-    def _arm_watchdog(self) -> None:
-        """(Re)arm the watchdog that reconnects when updates stop arriving."""
+    def _arm_watchdog(self, delay: float | None = None) -> None:
+        """(Re)arm the watchdog that reconnects when updates stop arriving.
+
+        ``delay`` overrides the default ``timeout * MISSED_PACKAGE_COUNT``
+        interval, used for the fast reconnect backoff after a failed attempt.
+        """
         self._cancel_watchdog_if_needed()
+        self._watchdog_delay = delay if delay is not None else self._timeout * MISSED_PACKAGE_COUNT
         self._cancel_watchdog = async_call_later(
             self.hass,
-            self._timeout * MISSED_PACKAGE_COUNT,
+            self._watchdog_delay,
             self._handle_watchdog_timeout,
         )
 
@@ -268,7 +285,7 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
         _LOGGER.debug(
             "No update from host %s within %ss, reconnecting",
             self.host,
-            self._timeout * MISSED_PACKAGE_COUNT,
+            self._watchdog_delay,
         )
         self._schedule_reconnect()
 
@@ -300,19 +317,39 @@ class Coordinator(DataUpdateCoordinator[DeviceStatus]):
                 self.client = await CoAPClient.create(self.host)
         except asyncio.CancelledError:
             raise
+        except TimeoutError:
+            self._handle_reconnect_failure(
+                TimeoutError(f"CoAP connection to {self.host} timed out after {CONNECT_TIMEOUT}s"),
+                "timed out after %ss (no CoAP answer)",
+            )
+            return
         except Exception as ex:  # noqa: BLE001 - retry on any connection failure
-            self._reconnecting = False
-            _LOGGER.warning("Reconnect to host %s failed: %s", self.host, ex)
-            self.async_set_update_error(ex)
-            self._async_create_unreachable_issue()
-            # Try again after the watchdog interval.
-            self._arm_watchdog()
+            self._handle_reconnect_failure(ex, "failed")
             return
 
         self._reconnecting = False
         _LOGGER.debug("Reconnected to host %s", self.host)
+        self._reconnect_delay = RECONNECT_RETRY_DELAY
         self._async_delete_unreachable_issue()
         self._start_observing()
+
+    @callback
+    def _handle_reconnect_failure(self, error: Exception, reason: str) -> None:
+        """Record a failed reconnect and schedule the next attempt.
+
+        The Philips firmware is known to wedge its CoAP server until a power
+        cycle, so a failed reconnect retries quickly at first (the user may be
+        power-cycling the device) and backs off exponentially to avoid hammering
+        a dead endpoint, capped at the watchdog interval.
+        """
+        self._reconnecting = False
+        _LOGGER.warning("Reconnect to host %s %s: %s", self.host, reason, error)
+        self.async_set_update_error(error)
+        self._async_create_unreachable_issue()
+        self._arm_watchdog(self._reconnect_delay)
+        self._reconnect_delay = min(
+            self._reconnect_delay * RECONNECT_BACKOFF_FACTOR, RECONNECT_BACKOFF_MAX
+        )
 
     @callback
     def _async_create_unreachable_issue(self) -> None:

@@ -9,6 +9,9 @@ from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
 from custom_components.philips_airpurifier_coap.coordinator import (
     MISSED_PACKAGE_COUNT,
+    RECONNECT_BACKOFF_FACTOR,
+    RECONNECT_BACKOFF_MAX,
+    RECONNECT_RETRY_DELAY,
     Coordinator,
 )
 from homeassistant.core import HomeAssistant, callback
@@ -375,6 +378,75 @@ async def test_reconnect_failure_marks_unavailable(hass: HomeAssistant) -> None:
     # using a shut-down client.
     assert coord.client is None
     client.shutdown.assert_awaited()
+
+    await coord.async_shutdown()
+
+
+async def test_reconnect_failure_uses_backoff_and_resets_on_update(
+    hass: HomeAssistant,
+) -> None:
+    """A failed reconnect schedules a fast retry; a status update resets the backoff."""
+    client = FakeClient({"pwr": "1"}, timeout=1)
+    coord = _make_coordinator(hass, client, None)
+    await coord.async_first_refresh()
+    coord.async_add_listener(lambda: None)
+    await hass.async_block_till_done()
+
+    # First failure: the watchdog is re-armed with the initial fast delay, not
+    # the full watchdog interval, and the delay backs off.
+    with patch(
+        "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+        AsyncMock(side_effect=OSError("boom")),
+    ):
+        async_fire_time_changed(
+            hass, dt_util.utcnow() + timedelta(seconds=MISSED_PACKAGE_COUNT + 2)
+        )
+        await hass.async_block_till_done()
+    assert coord.last_update_success is False
+    assert coord._reconnect_delay == RECONNECT_RETRY_DELAY * RECONNECT_BACKOFF_FACTOR
+
+    # A second failure keeps backing off, capped at the maximum.
+    with patch(
+        "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+        AsyncMock(side_effect=OSError("boom")),
+    ):
+        async_fire_time_changed(
+            hass,
+            dt_util.utcnow() + timedelta(seconds=RECONNECT_RETRY_DELAY * 2),
+        )
+        await hass.async_block_till_done()
+    assert coord._reconnect_delay == min(
+        RECONNECT_RETRY_DELAY * RECONNECT_BACKOFF_FACTOR**2, RECONNECT_BACKOFF_MAX
+    )
+
+    # Enough failures to blow past the cap: the delay stays at the maximum.
+    with patch(
+        "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+        AsyncMock(side_effect=OSError("boom")),
+    ):
+        async_fire_time_changed(
+            hass,
+            dt_util.utcnow() + timedelta(seconds=RECONNECT_BACKOFF_MAX + RECONNECT_RETRY_DELAY * 4),
+        )
+        await hass.async_block_till_done()
+    assert coord._reconnect_delay == RECONNECT_BACKOFF_MAX
+
+    # Reconnect succeeds and observing resumes; the next update resets the backoff.
+    # Use a strictly larger timestamp: each failed retry re-armed the watchdog.
+    new_client = FakeClient({"pwr": "1"}, timeout=1)
+    with patch(
+        "custom_components.philips_airpurifier_coap.coordinator.CoAPClient.create",
+        AsyncMock(return_value=new_client),
+    ):
+        async_fire_time_changed(
+            hass,
+            dt_util.utcnow() + timedelta(seconds=RECONNECT_BACKOFF_MAX + RECONNECT_RETRY_DELAY * 8),
+        )
+        await hass.async_block_till_done()
+    assert coord.client is new_client
+    await new_client.queue.put({"pwr": "1"})
+    await hass.async_block_till_done()
+    assert coord._reconnect_delay == RECONNECT_RETRY_DELAY
 
     await coord.async_shutdown()
 
