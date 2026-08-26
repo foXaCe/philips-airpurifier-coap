@@ -6,8 +6,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from aioairctrl import CoAPClient
-
+    from .aioairctrl import CoAPClient
     from .coordinator import Coordinator
     from .model import DeviceInformation, DeviceStatus
 

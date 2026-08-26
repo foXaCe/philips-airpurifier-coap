@@ -10,7 +10,6 @@ import re
 from typing import Any, cast
 from urllib.parse import urlparse
 
-from aioairctrl import CoAPClient
 import voluptuous as vol
 
 from homeassistant import config_entries, exceptions
@@ -27,6 +26,7 @@ from homeassistant.helpers.service_info.dhcp import DhcpServiceInfo
 from homeassistant.helpers.service_info.ssdp import SsdpServiceInfo
 from homeassistant.util.timeout import TimeoutManager
 
+from .aioairctrl import CoAPClient
 from .const import (
     CONF_DEVICE_ID,
     CONF_FILTER_ALERT_THRESHOLD,

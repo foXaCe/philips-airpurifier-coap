@@ -8,22 +8,14 @@ from datetime import datetime
 import logging
 from typing import TYPE_CHECKING, Any
 
-from aioairctrl import CoAPClient
-
-try:
-    from aioairctrl.coap.encryption import DigestMismatchException
-except ImportError:  # pragma: no cover - defensive, library internals may move
-
-    class DigestMismatchException(Exception):  # type: ignore[no-redef]  # noqa: N818
-        """Fallback used when the library internals are unavailable."""
-
-
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
+from .aioairctrl import CoAPClient
+from .aioairctrl.coap.encryption import DigestMismatchException
 from .const import DOMAIN
 from .model import DeviceStatus
 

@@ -12,7 +12,6 @@ from os import walk
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from aioairctrl import CoAPClient
 from getmac import get_mac_address
 
 from homeassistant.components.frontend import add_extra_js_url
@@ -25,6 +24,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.device_registry import format_mac
 from homeassistant.helpers.typing import ConfigType
 
+from .aioairctrl import CoAPClient
 from .config_entry_data import ConfigEntryData
 from .const import (
     CONF_DEVICE_ID,

@@ -100,6 +100,24 @@ async def test_sensor_value_fn(hass: HomeAssistant, make_runtime) -> None:
     assert temp.native_value == 22.5
 
 
+async def test_sensor_invalid_reading_sentinels(hass: HomeAssistant, make_runtime) -> None:
+    """Sentinel readings (255 / 65535) report no value; zero stays valid."""
+    status = _status(
+        **{
+            PhilipsApi.PM25: 65535,
+            PhilipsApi.TOTAL_VOLATILE_ORGANIC_COMPOUNDS: 255,
+        }
+    )
+    entities, _ = await _setup(hass, make_runtime, sensor, "AC3033", status)
+    by_key = {e.entity_description.key: e for e in entities}
+    assert by_key[PhilipsApi.PM25].native_value is None
+    assert by_key[PhilipsApi.TOTAL_VOLATILE_ORGANIC_COMPOUNDS].native_value is None
+
+    clean, _ = await _setup(hass, make_runtime, sensor, "AC3033", _status(**{PhilipsApi.PM25: 0}))
+    pm25_zero = next(e for e in clean if e.entity_description.key == PhilipsApi.PM25)
+    assert pm25_zero.native_value == 0
+
+
 async def test_filter_sensor(hass: HomeAssistant, make_runtime) -> None:
     """Filter sensors report a percentage and keep the label-based unique_id."""
     status = _status(

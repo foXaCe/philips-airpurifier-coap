@@ -329,6 +329,12 @@ class PhilipsSensor(PhilipsEntity, SensorEntity):
             return None
         if self.entity_description.value_fn is not None:
             return self.entity_description.value_fn(value, self._device_status)
+        # The device reports sentinel values when a reading is unavailable.
+        # Reverse-engineered from the Philips Air+ app (PHAirReading): tvoc
+        # uses 255, every other reading uses 65535. Unlike the app we keep 0
+        # as a valid reading (a clean-air PM2.5 of 0 is legitimate).
+        if isinstance(value, int) and value in (255, 65535):
+            return None
         return cast(StateType, value)
 
 

@@ -58,3 +58,9 @@ home-assistant_v2.db
 CLAUDE.md
 AGENTS.md
 .claude/
+
+# Reverse engineering APK Philips (local, jamais sur le repo)
+*.apk
+*.xapk
+*-decompiled/
+com.philips.ph.homecare*/

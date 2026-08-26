@@ -31,9 +31,9 @@
   "integration_type": "device",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/foXaCe/philips-airpurifier-coap/issues",
-  "loggers": ["aioairctrl", "coap", "getmac"],
+  "loggers": ["coap", "getmac"],
   "quality_scale": "gold",
-  "requirements": ["aioairctrl==0.3.1", "getmac==0.9.5"],
+  "requirements": ["aiocoap>=0.4.17,<0.5", "getmac==0.9.5", "pycryptodomex>=3.20.0"],
   "ssdp": [
     {
       "st": "urn:philips-com:device:DiProduct:1"

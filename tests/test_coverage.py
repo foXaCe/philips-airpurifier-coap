@@ -323,13 +323,14 @@ async def test_check_single_ip_shutdown_error() -> None:
 
 
 async def test_scan_falls_back_when_arp_empty() -> None:
-    """With no ARP entries, the scan falls back to the common DHCP range."""
+    """With no CoAP replies and no ARP entries, the scan falls back to the DHCP range."""
     device = {"ip": "192.168.1.5", "model": "AC3033/10", "name": "x", "status": {}}
 
     async def _check(ip, *_):
         return device if ip == "192.168.1.5" else None
 
     with (
+        patch.object(helpers, "coap_discovery", AsyncMock(return_value=[])),
         patch.object(helpers, "get_local_ip", return_value="192.168.1.10"),
         patch.object(helpers, "ping_sweep", AsyncMock()),
         patch.object(helpers, "get_active_ips_from_arp", return_value=[]),
