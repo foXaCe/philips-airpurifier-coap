@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **New-generation sensors** (AC0850, AC1715): these devices reported nothing
+  beyond PM2.5 and the allergen index. They now expose gas/TVOC, temperature
+  and humidity, plus their active-carbon filter and a child-lock switch.
+- **Third-generation filters**: active-carbon and wick filter sensors.
+- **"No filter detected" binary sensor** (diagnostic): reports that the device
+  cannot read its filter — missing, installed incorrectly, or with an
+  unreadable tag. Available in all eight languages.
+- **`PROTOCOL.md`**: reference for the CoAP property map across the three
+  device generations, the error bitfield and the transport rules.
+
+Entities are only created when the device actually reports the matching key,
+so no model gains an entity it cannot back.
+
+### Fixed
+- **Status updates dropped for no reason**: the replay window rejected a
+  message id equal to the last one seen, although a device answering a fresh
+  request with its current counter — or a duplicated datagram — is legitimate.
+  This surfaced as a failed first status read or as missed updates.
+- **Stream never recovering after a device reboot**: a rebooted device
+  restarts its counter far below the last id seen, leaving every later packet
+  outside the window. The desynchronisation is now detected and triggers a
+  reconnect (and therefore a re-sync) within seconds, instead of waiting for
+  the missed-update watchdog.
+- **CI gates restored**: vendoring `aioairctrl` had left an untyped module
+  (33 mypy errors) at 18% coverage against a 100% gate. Both are green again,
+  with a test suite driving the CoAP client against a fake device.
+
 ## [0.40.4] - 2026-08-10
 
 ### Fixed
