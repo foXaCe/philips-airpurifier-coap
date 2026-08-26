@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.41.0] - 2026-08-26
+## [0.42.0] - 2026-08-26
 
 ### Added
 - **New-generation sensors** (AC0850, AC1715): these devices reported nothing
@@ -36,6 +36,13 @@ so no model gains an entity it cannot back.
 - **CI gates restored**: vendoring `aioairctrl` had left an untyped module
   (33 mypy errors) at 18% coverage against a 100% gate. Both are green again,
   with a test suite driving the CoAP client against a fake device.
+
+## [0.41.0] - 2026-08-26
+
+### Added
+- **Vendored `aioairctrl`** into the integration, with TLS/GCM encryption
+  support for the devices that require it, CoAP multicast discovery, and
+  sentinel handling for invalid sensor readings.
 
 ## [0.40.4] - 2026-08-10
 
