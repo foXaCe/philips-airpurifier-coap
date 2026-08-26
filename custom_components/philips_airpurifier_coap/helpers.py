@@ -151,9 +151,10 @@ def _extract_payload(data: bytes) -> dict[str, Any] | None:
     if marker != -1:
         raw = raw[marker + 1 :]
     try:
-        return json.loads(raw)
+        payload: dict[str, Any] = json.loads(raw)
     except json.JSONDecodeError:
         return None
+    return payload
 
 
 def _parse_discovery_reply(

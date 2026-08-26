@@ -404,6 +404,30 @@ class TestCoapDiscoveryLive:
                 devices = await helpers.coap_discovery(timeout=0.5)
         assert len(devices) == 1
 
+    async def test_coap_discovery_skips_unparsable_reply(self):
+        """A reply that carries no usable device info leaves the scan empty."""
+        # Well-formed CoAP frame, but the payload is not a device description.
+        coap_reply = b"\x70\x45\x00\x01\xff" + b'{"unrelated": true}'
+
+        with (
+            patch.object(helpers, "get_local_ip", return_value="192.168.1.10"),
+            patch("socket.socket") as mock_sock,
+        ):
+            instance = mock_sock.return_value
+            call_count = 0
+
+            def _recv(*_a, **_kw):
+                nonlocal call_count
+                call_count += 1
+                if call_count == 1:
+                    return (coap_reply, ("192.168.1.50", 5683))
+                raise TimeoutError
+
+            instance.recvfrom.side_effect = _recv
+            devices = await helpers.coap_discovery(timeout=0.3)
+
+        assert devices == []
+
     async def test_check_single_ip_shutdown_on_success(self):
         """Client is shut down even after a successful status fetch."""
         client = AsyncMock()

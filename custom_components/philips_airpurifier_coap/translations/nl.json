@@ -69,6 +69,13 @@
           "on": "Aandacht vereist"
         }
       },
+      "filter_not_detected": {
+        "name": "Geen filter gedetecteerd",
+        "state": {
+          "off": "Gedetecteerd",
+          "on": "Niet gedetecteerd"
+        }
+      },
       "humidification": {
         "name": "Bevochtiging",
         "state": {

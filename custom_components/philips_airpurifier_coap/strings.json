@@ -204,6 +204,13 @@
           "on": "Attention needed",
           "off": "OK"
         }
+      },
+      "filter_not_detected": {
+        "name": "No filter detected",
+        "state": {
+          "on": "Not detected",
+          "off": "Detected"
+        }
       }
     },
     "sensor": {

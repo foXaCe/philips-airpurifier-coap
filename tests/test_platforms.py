@@ -150,6 +150,36 @@ async def test_binary_sensor_value_fn(hass: HomeAssistant, make_runtime) -> None
     assert water.unique_id == "AC3420-ABCD1234567890-d03240"
 
 
+@pytest.mark.parametrize(
+    ("error_code", "expected"),
+    [
+        (0, False),
+        (32781, True),
+        (32782, True),
+        (65535, True),  # every bit set -> both patterns match
+        (13, False),  # bits 0, 2 and 3 without bit 15
+        (32768, False),  # bit 15 alone
+    ],
+)
+async def test_filter_detect_sensor(
+    hass: HomeAssistant, make_runtime, error_code: int, expected: bool
+) -> None:
+    """The filter-detect sensor matches the two error bit patterns."""
+    status = _status(**{PhilipsApi.NEW2_ERROR_CODE: error_code})
+    entities, _ = await _setup(hass, make_runtime, binary_sensor, "AC3420", status)
+    detect = next(e for e in entities if isinstance(e, binary_sensor.PhilipsFilterDetectSensor))
+    assert detect.unique_id == "AC3420-ABCD1234567890-filter_detect_error"
+    assert detect.is_on is expected
+
+
+async def test_filter_detect_sensor_non_integer(hass: HomeAssistant, make_runtime) -> None:
+    """A non-integer error code leaves the filter-detect sensor unknown."""
+    status = _status(**{PhilipsApi.NEW2_ERROR_CODE: "n/a"})
+    entities, _ = await _setup(hass, make_runtime, binary_sensor, "AC3420", status)
+    detect = next(e for e in entities if isinstance(e, binary_sensor.PhilipsFilterDetectSensor))
+    assert detect.is_on is None
+
+
 async def test_filter_alert_sensor_added(hass: HomeAssistant, make_runtime) -> None:
     """A filter-alert sensor is added when the device exposes a filter."""
     status = _status(**{PhilipsApi.FILTER_HEPA: 5, PhilipsApi.FILTER_HEPA_TOTAL: 100})

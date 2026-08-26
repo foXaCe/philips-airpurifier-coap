@@ -49,6 +49,13 @@ SWITCH_TYPES: tuple[PhilipsSwitchEntityDescription, ...] = (
         off_value=0,
     ),
     PhilipsSwitchEntityDescription(
+        key=PhilipsApi.NEW_CHILD_LOCK,
+        translation_key=FanAttributes.CHILD_LOCK,
+        entity_category=EntityCategory.CONFIG,
+        on_value=True,
+        off_value=False,
+    ),
+    PhilipsSwitchEntityDescription(
         key=PhilipsApi.NEW2_BEEP,
         translation_key=FanAttributes.BEEP,
         entity_category=EntityCategory.CONFIG,

@@ -1,9 +1,11 @@
 """CoAP client for Philips air purifiers."""
 
+from collections.abc import AsyncIterator
 import json
 import logging
 import os
 import random
+from typing import Any
 
 from aiocoap import (
     NON,
@@ -47,7 +49,7 @@ class Client:
     CONTROL_PATH = "/sys/dev/control"
     SYNC_PATH = "/sys/dev/sync"
 
-    def __init__(self, host, port=5683, option=None):
+    def __init__(self, host: str, port: int = 5683, option: int | str | None = None) -> None:
         self.host = host
         self.port = port
         self._option = option
@@ -72,7 +74,7 @@ class Client:
             raise RuntimeError("Client not initialized; use Client.create()")
         return self._encryption_context
 
-    async def _init(self):
+    async def _init(self) -> None:
         self._client_context = await Context.create_client_context(transports=["simple6"])
         self._encryption_context = EncryptionContext()
         try:
@@ -85,7 +87,7 @@ class Client:
             await self._client_context.shutdown()
             raise
 
-    async def _tls_handshake(self):
+    async def _tls_handshake(self) -> None:
         """Negotiate the session secret with a TLS-capable device.
 
         Mirrors the app's flow on /sys/dev/info/tls: we post an RSA-1024
@@ -111,7 +113,7 @@ class Client:
         self._enc.set_tls_secret(secret)
 
     @classmethod
-    async def create(cls, *args, **kwargs):
+    async def create(cls, *args: Any, **kwargs: Any) -> "Client":
         """Async factory — use instead of the constructor."""
         obj = cls(*args, **kwargs)
         await obj._init()
@@ -121,7 +123,7 @@ class Client:
         if self._client_context:
             await self._client_context.shutdown()
 
-    async def _sync(self):
+    async def _sync(self) -> None:
         """Exchange a nonce with the device to obtain the initial client key.
 
         The client sends a random 4-byte hex string; the device responds with
@@ -140,7 +142,7 @@ class Client:
         logger.debug("synced: %s", client_key)
         self._enc.set_client_key(client_key)
 
-    async def get_status(self):
+    async def get_status(self) -> tuple[dict[str, Any], int]:
         """Return (state_reported, max_age) for the current device status."""
         logger.debug("retrieving status")
         request = Message(
@@ -164,10 +166,10 @@ class Client:
             logger.debug("max age = %s", max_age)
         return state_reported["state"]["reported"], max_age
 
-    async def observe_status(self):
+    async def observe_status(self) -> AsyncIterator[dict[str, Any]]:
         """Async generator that yields state_reported dicts as the device pushes updates."""
 
-        def decrypt_status(response):
+        def decrypt_status(response: Any) -> dict[str, Any] | None:
             payload_encrypted = response.payload.decode()
             payload = self._enc.decrypt(payload_encrypted)
             if payload is None:
@@ -175,7 +177,8 @@ class Client:
                 logger.debug("dropped stale status packet")
                 return None
             logger.debug("observation status: %s", payload)
-            return json.loads(payload)["state"]["reported"]
+            reported: dict[str, Any] = json.loads(payload)["state"]["reported"]
+            return reported
 
         logger.debug("observing status")
         request = Message(
@@ -202,12 +205,16 @@ class Client:
             if observation is not None:
                 observation.cancel()
 
-    async def set_control_value(self, key, value, retry_count=5, resync=True) -> bool:
+    async def set_control_value(
+        self, key: str, value: Any, retry_count: int = 5, resync: bool = True
+    ) -> bool:
         return await self.set_control_values(
             data={key: value}, retry_count=retry_count, resync=resync
         )
 
-    async def set_control_values(self, data: dict, retry_count=5, resync=True) -> bool:
+    async def set_control_values(
+        self, data: dict[str, Any], retry_count: int = 5, resync: bool = True
+    ) -> bool:
         """Send a control command to the device, retrying on failure.
 
         On the first failure, if resync=True, the client re-syncs the

@@ -117,7 +117,7 @@ class PhilipsAirPurifierConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 status, _ = await client.get_status()
                 _LOGGER.debug("got status")
 
-            return cast(dict[str, Any], status)
+            return status
         finally:
             if client is not None:
                 await client.shutdown()

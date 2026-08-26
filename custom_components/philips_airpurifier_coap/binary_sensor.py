@@ -108,6 +108,22 @@ async def async_setup_entry(
     if available_filters:
         entities.append(PhilipsFilterAlertSensor(hass, entry, config_entry_data, available_filters))
 
+    # Add the "no filter detected" sensor when the device exposes its error field.
+    error_key = next(
+        (
+            key
+            for key in (
+                PhilipsApi.ERROR_CODE,
+                PhilipsApi.NEW_ERROR_CODE,
+                PhilipsApi.NEW2_ERROR_CODE,
+            )
+            if key in status and key in available_binary_sensors
+        ),
+        None,
+    )
+    if error_key:
+        entities.append(PhilipsFilterDetectSensor(hass, entry, config_entry_data, error_key))
+
     async_add_entities(entities)
 
 
@@ -140,6 +156,46 @@ class PhilipsBinarySensor(PhilipsEntity, BinarySensorEntity):
         if self.entity_description.value_fn is not None:
             return bool(self.entity_description.value_fn(value))
         return bool(value)
+
+
+class PhilipsFilterDetectSensor(PhilipsEntity, BinarySensorEntity):
+    """Binary sensor that indicates the device cannot detect its filter.
+
+    The device reports this in its error bitfield: the condition is raised when
+    either of two bit patterns is fully set. It means the filter is missing, is
+    installed incorrectly, or its tag cannot be read.
+    """
+
+    _attr_device_class = BinarySensorDeviceClass.PROBLEM
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = FanAttributes.FILTER_NOT_DETECTED
+
+    # Both patterns share bits 2, 3 and 15 and differ only in bit 0 vs bit 1.
+    _MASKS = (32781, 32782)
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config: ConfigEntry,
+        config_entry_data: ConfigEntryData,
+        error_key: str,
+    ) -> None:
+        """Initialize the filter detection sensor."""
+        super().__init__(hass, config, config_entry_data)
+
+        self._error_key = error_key
+
+        model = config_entry_data.device_information.model
+        device_id = config_entry_data.device_information.device_id
+        self._attr_unique_id = f"{model}-{device_id}-filter_detect_error"
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return True when the device reports no detectable filter."""
+        value = self._device_status.get(self._error_key)
+        if not isinstance(value, int):
+            return None
+        return any(value & mask == mask for mask in self._MASKS)
 
 
 class PhilipsFilterAlertSensor(PhilipsEntity, BinarySensorEntity):

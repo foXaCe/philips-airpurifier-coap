@@ -34,6 +34,12 @@ filterwarnings = [
     # aioairctrl's aiocoap monkeypatch imports the deprecated EXCHANGE_LIFETIME
     # constant; upstream issue, not fixable from this integration.
     "ignore:EXCHANGE_LIFETIME is deprecated:DeprecationWarning",
+    # The CoAP client builds non-confirmable messages with Message(mtype=NON),
+    # which aiocoap 0.4.17 deprecates in favour of transport_tuning=Unreliable.
+    # Switching transports changes real network behaviour, so that migration is
+    # deliberately kept out of this test gate until it can be validated against
+    # a device.
+    "ignore:Initializing messages with an mtype is deprecated:DeprecationWarning",
 ]
 
 [tool.coverage.run]

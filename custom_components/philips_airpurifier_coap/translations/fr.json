@@ -69,6 +69,13 @@
           "on": "Attention requise"
         }
       },
+      "filter_not_detected": {
+        "name": "Aucun filtre détecté",
+        "state": {
+          "off": "Détecté",
+          "on": "Non détecté"
+        }
+      },
       "humidification": {
         "name": "Humidification",
         "state": {

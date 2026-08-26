@@ -13,4 +13,7 @@ regexTarget = "line"
 regexes = [
   '''PhilipsApi\.DEVICE_ID: "[A-Za-z0-9]{2,20}"''',
   '''key="plainkey", translation_key=''',
+  # The negotiated TLS session secret in the encryption tests: a fixed
+  # 16-char hex string chosen for readability, not a real credential.
+  '''secret = "0123456789ABCDEF"''',
 ]

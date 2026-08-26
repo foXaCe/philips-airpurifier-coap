@@ -69,6 +69,13 @@
           "on": "Aufmerksamkeit erforderlich"
         }
       },
+      "filter_not_detected": {
+        "name": "Kein Filter erkannt",
+        "state": {
+          "off": "Erkannt",
+          "on": "Nicht erkannt"
+        }
+      },
       "humidification": {
         "name": "Luftbefeuchtung",
         "state": {

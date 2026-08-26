@@ -139,6 +139,13 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         suggested_display_precision=0,
     ),
     PhilipsSensorEntityDescription(
+        key=PhilipsApi.NEW_GAS,
+        translation_key=FanAttributes.GAS,
+        native_unit_of_measurement="L",
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+    ),
+    PhilipsSensorEntityDescription(
         key=PhilipsApi.TOTAL_VOLATILE_ORGANIC_COMPOUNDS,
         translation_key=FanAttributes.TOTAL_VOLATILE_ORGANIC_COMPOUNDS,
         native_unit_of_measurement="L",
@@ -155,6 +162,14 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.NEW2_HUMIDITY,
+        device_class=SensorDeviceClass.HUMIDITY,
+        translation_key=FanAttributes.HUMIDITY,
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+        native_unit_of_measurement=PERCENTAGE,
+    ),
+    PhilipsSensorEntityDescription(
+        key=PhilipsApi.NEW_HUMIDITY,
         device_class=SensorDeviceClass.HUMIDITY,
         translation_key=FanAttributes.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -185,6 +200,14 @@ SENSOR_TYPES: tuple[PhilipsSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         suggested_display_precision=1,
         value_fn=lambda value, _: value / 10,
+    ),
+    PhilipsSensorEntityDescription(
+        key=PhilipsApi.NEW_TEMPERATURE,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        translation_key=FanAttributes.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_display_precision=0,
     ),
     PhilipsSensorEntityDescription(
         key=PhilipsApi.WATER_LEVEL,
@@ -265,6 +288,27 @@ FILTER_TYPES: tuple[PhilipsFilterEntityDescription, ...] = (
         translation_key=FanAttributes.FILTER_NANOPROTECT_CLEAN,
         icon_map=((0, ICON.PREFILTER_CLEANING), (10, ICON.NANOPROTECT_FILTER)),
         total_key=PhilipsApi.NEW2_FILTER_NANOPROTECT_PREFILTER_TOTAL,
+        type_key="",
+    ),
+    PhilipsFilterEntityDescription(
+        key=PhilipsApi.NEW2_FILTER_ACTIVE_CARBON,
+        translation_key=FanAttributes.FILTER_ACTIVE_CARBON,
+        icon_map=((0, ICON.FILTER_REPLACEMENT), (10, ICON.NANOPROTECT_FILTER)),
+        total_key=PhilipsApi.NEW2_FILTER_ACTIVE_CARBON_TOTAL,
+        type_key="",
+    ),
+    PhilipsFilterEntityDescription(
+        key=PhilipsApi.NEW2_FILTER_WICK,
+        translation_key=FanAttributes.FILTER_WICK,
+        icon_map=((0, ICON.PREFILTER_WICK_CLEANING), (10, ICON.NANOPROTECT_FILTER)),
+        total_key=PhilipsApi.NEW2_FILTER_WICK_TOTAL,
+        type_key="",
+    ),
+    PhilipsFilterEntityDescription(
+        key=PhilipsApi.NEW_FILTER_ACTIVE_CARBON,
+        translation_key=FanAttributes.FILTER_ACTIVE_CARBON,
+        icon_map=((0, ICON.FILTER_REPLACEMENT), (72, "mdi:dots-grid")),
+        total_key=PhilipsApi.NEW_FILTER_ACTIVE_CARBON_TOTAL,
         type_key="",
     ),
 )

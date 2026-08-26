@@ -15,7 +15,7 @@ from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .aioairctrl import CoAPClient
-from .aioairctrl.coap.encryption import DigestMismatchException
+from .aioairctrl.coap.encryption import DigestMismatchException, StaleMessageException
 from .const import DOMAIN
 from .model import DeviceStatus
 
@@ -52,8 +52,10 @@ RECONNECT_BACKOFF_MAX = 180
 # ``ValueError``), the decrypted plaintext may not decode as UTF-8
 # (``UnicodeDecodeError``, a ``ValueError`` subclass) or lack the expected keys
 # (``KeyError``), or the self-consistent digest check may reject it
-# (``DigestMismatchException``). None of these mean the device is unreachable.
-DECODE_ERRORS = (ValueError, KeyError, DigestMismatchException)
+# (``DigestMismatchException``). A device that restarted its message counter
+# raises ``StaleMessageException``, which the reconnect fixes by re-syncing.
+# None of these mean the device is unreachable.
+DECODE_ERRORS = (ValueError, KeyError, DigestMismatchException, StaleMessageException)
 
 
 class Coordinator(DataUpdateCoordinator[DeviceStatus]):
