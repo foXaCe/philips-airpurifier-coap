@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.41.0] - 2026-08-26
+
 ### Added
 - **New-generation sensors** (AC0850, AC1715): these devices reported nothing
   beyond PM2.5 and the allergen index. They now expose gas/TVOC, temperature
