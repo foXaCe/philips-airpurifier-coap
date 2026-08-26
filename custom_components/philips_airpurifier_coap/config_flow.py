@@ -6,7 +6,6 @@ import re
 from typing import Any
 
 import voluptuous as vol
-from aioairctrl import CoAPClient
 from homeassistant import config_entries, exceptions
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.const import CONF_HOST, CONF_NAME
@@ -15,9 +14,21 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.service_info.dhcp import DhcpServiceInfo
 from homeassistant.util.timeout import TimeoutManager
 
-from .const import CONF_DEVICE_ID, CONF_MODEL, CONF_STATUS, DOMAIN, PhilipsApi
+from .aioairctrl import CoAPClient
+from .const import (
+    CONF_DEVICE_ID,
+    CONF_MODEL,
+    CONF_STATUS,
+    DOMAIN,
+    PhilipsApi,
+)
 from .helpers import extract_model, extract_name
 from .philips import model_to_class
+
+CONF_METHOD = "method"
+CONF_DEVICE = "device"
+METHOD_SCAN = "scan"
+METHOD_MANUAL = "manual"
 
 _LOGGER = logging.getLogger(__name__)
 

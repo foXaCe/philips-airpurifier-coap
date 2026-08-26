@@ -5,13 +5,16 @@ import contextlib
 import logging
 from asyncio.tasks import Task
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from aioairctrl import CoAPClient
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 
+from .aioairctrl import CoAPClient
 from .timer import Timer
+
+if TYPE_CHECKING:
+    pass
 
 _LOGGER = logging.getLogger(__name__)
 

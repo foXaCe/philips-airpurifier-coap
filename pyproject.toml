@@ -12,6 +12,10 @@ line-length = 120
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "C4", "TRY", "PERF"]
 
+[tool.ruff.lint.per-file-ignores]
+"custom_components/philips_airpurifier_coap/aioairctrl/**" = ["TRY003"]
+"tests/**" = ["TRY003"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]

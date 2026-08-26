@@ -10,7 +10,6 @@ from ipaddress import IPv6Address, ip_address
 from os import walk
 from pathlib import Path
 
-from aioairctrl import CoAPClient
 from getmac import get_mac_address
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import StaticPathConfig
@@ -21,6 +20,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.http import HomeAssistantView
 
+from .aioairctrl import CoAPClient
 from .config_entry_data import ConfigEntryData
 from .const import (
     CONF_DEVICE_ID,
