@@ -21,6 +21,7 @@ Air+ app (com.gaoda.util.TSLKeyPairGenerator / defpackage.v80).
 
 import hashlib
 import struct
+from typing import Any
 
 from Cryptodome.Cipher import AES, PKCS1_v1_5
 from Cryptodome.PublicKey import RSA
@@ -32,28 +33,38 @@ class DigestMismatchException(Exception):
 
 
 class StaleMessageException(Exception):
-    """Raised when an incoming message id falls outside the freshness window."""
+    """Raised when incoming message ids keep falling outside the freshness window."""
 
 
 # The device wraps its message counter at 2e9 (defpackage.DigitalTrans) and the
-# app accepts ids within +/-10 of the last seen one (zd.l).
+# app accepts ids from the last seen one up to +10 (zd.l).
 COAP_MESSAGE_ID_MAX = 2000000000
 FRESHNESS_WINDOW = 10
+
+# Consecutive rejects tolerated before the stream is declared desynchronised.
+# A device that reboots restarts its counter far below the last id we saw, so
+# every later packet would be rejected forever; the app handles this by marking
+# the device offline and re-running the key exchange. Raising here lets the
+# coordinator reconnect (and therefore re-sync) in seconds instead of waiting
+# for its missed-update watchdog.
+MAX_CONSECUTIVE_STALE = 3
 
 
 class EncryptionContext:
     # Protocol-defined secret mixed into every plain-mode key derivation.
     SECRET_KEY = "JiangPan"  # nosec B105
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Hex-encoded 4-byte counter, e.g. "00A3F1C2". None until set_client_key is called.
         self._client_key: str | None = None
         # 16-char secret established by the TLS key exchange; None in plain mode.
         self._tls_secret: str | None = None
         # Last incoming message id (int) accepted for freshness checking.
         self._last_seen_id: int | None = None
+        # Consecutive freshness rejects, reset by any accepted message.
+        self._stale_streak: int = 0
 
-    def set_client_key(self, client_key):
+    def set_client_key(self, client_key: str) -> None:
         self._client_key = client_key
 
     @property
@@ -78,13 +89,14 @@ class EncryptionContext:
         if self.tls_active:
             # TLS mode mixes the raw bytes of the negotiated secret (hex-decoded)
             # with the ASCII message id; everything stays uppercase afterwards.
+            assert self._tls_secret is not None  # nosec B101 - implied by tls_active
             digest = hashlib.md5(bytes.fromhex(self._tls_secret) + key.encode()).hexdigest().upper()  # nosec B324
         else:
             digest = hashlib.md5((self.SECRET_KEY + key).encode()).hexdigest().upper()  # nosec B324
         half = len(digest) // 2
         return digest[:half], digest[half:]
 
-    def _create_cipher(self, key: str):
+    def _create_cipher(self, key: str) -> Any:
         secret_key, iv = self._derive_key_and_iv(key)
         if self.tls_active:
             # In GCM mode the derived key doubles as AAD.
@@ -103,6 +115,7 @@ class EncryptionContext:
         key = self._increment_client_key()
         cipher = self._create_cipher(key)
         plaintext = payload.encode()
+        ciphertext: str
         if self.tls_active:
             # AES.new(...).update(aad) sets AAD before sealing; the tag is
             # appended to the ciphertext by digest().
@@ -114,7 +127,7 @@ class EncryptionContext:
         digest = hashlib.sha256((key + ciphertext).encode()).hexdigest().upper()
         return key + ciphertext + digest
 
-    def decrypt(self, payload_encrypted: str) -> str:
+    def decrypt(self, payload_encrypted: str) -> str | None:
         """Decrypt an incoming envelope.
 
         Returns None when the message id fails the freshness check — the app
@@ -133,6 +146,8 @@ class EncryptionContext:
             return None
         secret_key, iv = self._derive_key_and_iv(key)
         raw = bytes.fromhex(ciphertext)
+        cipher: Any
+        plaintext_unpadded: bytes
         if self.tls_active:
             # The trailing 16 bytes of the sealed blob are the GCM tag.
             cipher = AES.new(key=secret_key.encode(), mode=AES.MODE_GCM, nonce=iv[:12].encode())
@@ -144,17 +159,38 @@ class EncryptionContext:
         return plaintext_unpadded.decode()
 
     def _is_fresh(self, message_id: int) -> bool:
-        """Accept only ids advancing by 1..FRESHNESS_WINDOW (mod 2e9).
+        """Accept ids from the last seen one up to +FRESHNESS_WINDOW (mod 2e9).
 
-        The device increments its counter on every push, so an equal or older
-        id is a duplicate/replay and is silently dropped.
+        The app accepts an id equal to the last one it saw: a device answering
+        a fresh request with its current counter, or a duplicated UDP datagram,
+        is not a replay. Only ids that fall behind, or jump too far ahead, are
+        rejected.
+
+        Raises StaleMessageException once MAX_CONSECUTIVE_STALE ids in a row
+        have been rejected, which means the two counters no longer agree and
+        only a re-sync can recover.
         """
         last = self._last_seen_id
-        self._last_seen_id = message_id
         if last is None or message_id >= COAP_MESSAGE_ID_MAX:
+            self._last_seen_id = message_id
+            self._stale_streak = 0
             return True
+
         delta = (message_id - last) % COAP_MESSAGE_ID_MAX
-        return 0 < delta <= FRESHNESS_WINDOW
+        if delta <= FRESHNESS_WINDOW:
+            self._last_seen_id = message_id
+            self._stale_streak = 0
+            return True
+
+        # Keep the last accepted id: adopting a rejected one would silently
+        # resynchronise on a replayed packet.
+        self._stale_streak += 1
+        if self._stale_streak >= MAX_CONSECUTIVE_STALE:
+            raise StaleMessageException(
+                f"{self._stale_streak} consecutive stale message ids "
+                f"(last accepted {last}, received {message_id})"
+            )
+        return False
 
 
 def derive_tls_secret(random1: int, random2: int, prekey_plaintext: bytes) -> str:
