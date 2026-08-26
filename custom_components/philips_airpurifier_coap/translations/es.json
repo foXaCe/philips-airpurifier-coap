@@ -69,6 +69,13 @@
           "on": "Atención requerida"
         }
       },
+      "filter_not_detected": {
+        "name": "Ningún filtro detectado",
+        "state": {
+          "off": "Detectado",
+          "on": "No detectado"
+        }
+      },
       "humidification": {
         "name": "Humidificación",
         "state": {

@@ -66,8 +66,10 @@ def _code_translation_keys() -> dict[str, set[str]]:
         | {str(d.translation_key) for d in sensor.FILTER_TYPES},
         "switch": {str(d.translation_key) for d in switch.SWITCH_TYPES},
     }
-    # The filter-alert binary sensor sets its translation key on the class.
+    # Two binary sensors set their translation key on the class instead of on
+    # an entity description.
     keys["binary_sensor"].add(str(FanAttributes.FILTER_NEEDS_ATTENTION))
+    keys["binary_sensor"].add(str(FanAttributes.FILTER_NOT_DETECTED))
     return keys
 
 

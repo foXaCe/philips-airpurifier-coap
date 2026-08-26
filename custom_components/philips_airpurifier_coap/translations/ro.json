@@ -69,6 +69,13 @@
           "on": "Necesită atenție"
         }
       },
+      "filter_not_detected": {
+        "name": "Niciun filtru detectat",
+        "state": {
+          "off": "Detectat",
+          "on": "Nedetectat"
+        }
+      },
       "humidification": {
         "name": "Umidificare",
         "state": {

@@ -69,6 +69,13 @@
           "on": "Vyžaduje pozornosť"
         }
       },
+      "filter_not_detected": {
+        "name": "Nezistený žiadny filter",
+        "state": {
+          "off": "Zistený",
+          "on": "Nezistený"
+        }
+      },
       "humidification": {
         "name": "Zvlhčovanie",
         "state": {
