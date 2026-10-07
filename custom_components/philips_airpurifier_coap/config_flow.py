@@ -13,10 +13,10 @@ from urllib.parse import urlparse
 if TYPE_CHECKING:
     import probatio as vol
 else:
-    try:
+    try:  # pragma: no cover
         # Recent Home Assistant replaces voluptuous with the API-compatible probatio.
         import probatio as vol
-    except ImportError:  # Home Assistant releases that still ship voluptuous
+    except ImportError:  # pragma: no cover  # Home Assistant releases that still ship voluptuous
         import voluptuous as vol
 
 from homeassistant import config_entries, exceptions
