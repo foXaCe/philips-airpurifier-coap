@@ -33,7 +33,7 @@
   "issue_tracker": "https://github.com/foXaCe/philips-airpurifier-coap/issues",
   "loggers": ["coap", "getmac"],
   "quality_scale": "gold",
-  "requirements": ["aiocoap>=0.4.17,<0.5", "getmac==0.9.5", "pycryptodomex>=3.20.0"],
+  "requirements": ["aiocoap>=0.4.17,<0.5", "getmac==0.9.6", "pycryptodomex>=3.20.0"],
   "ssdp": [
     {
       "st": "urn:philips-com:device:DiProduct:1"

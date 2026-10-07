@@ -23,7 +23,7 @@ test = [
     "pytest-cov>=4.0.0",
     "pytest-homeassistant-custom-component>=0.13.0",
     "aioairctrl==0.3.1",
-    "getmac==0.9.5",
+    "getmac==0.9.6",
 ]
 
 [tool.pytest.ini_options]
