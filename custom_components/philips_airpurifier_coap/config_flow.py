@@ -7,10 +7,17 @@ from collections.abc import Mapping
 import ipaddress
 import logging
 import re
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import urlparse
 
-import voluptuous as vol
+if TYPE_CHECKING:
+    import probatio as vol
+else:
+    try:  # pragma: no cover
+        # Recent Home Assistant replaces voluptuous with the API-compatible probatio.
+        import probatio as vol
+    except ImportError:  # pragma: no cover  # Home Assistant releases that still ship voluptuous
+        import voluptuous as vol
 
 from homeassistant import config_entries, exceptions
 from homeassistant.config_entries import ConfigFlowResult, OptionsFlowWithReload
