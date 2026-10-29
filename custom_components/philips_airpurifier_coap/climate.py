@@ -179,7 +179,7 @@ class PhilipsHeater(PhilipsGenericControlBase, ClimateEntity):
         """Return the current temperature."""
         return self._device_status.get(self._current_temperature_key)
 
-    if not _HAS_NATIVE:
+    if not _HAS_NATIVE:  # pragma: no branch - one side per HA version
         # Pre-2026.11 HA only knows the legacy names.
         _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
