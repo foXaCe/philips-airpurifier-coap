@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.42.1] - 2026-10-29
+
+### Fixed
+
+- No more deprecation warning about `temperature_unit` on Home Assistant 2026.11: the climate entity now reports its unit and temperatures through the `native_*` properties, and keeps working on earlier Home Assistant versions.
+
+### Changed
+
+- Dependencies updated.
+
 ## [0.42.0] - 2026-08-26
 
 ### Added
