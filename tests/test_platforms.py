@@ -284,6 +284,26 @@ async def test_climate_setup_and_temperature_guard(hass: HomeAssistant, make_run
     runtime.client.set_control_value.assert_not_called()
 
 
+async def test_climate_temperature_unit_current_target(hass: HomeAssistant, make_runtime) -> None:
+    """Unit, current and target temperature are exposed on old and new HA."""
+    from homeassistant.components.climate import ATTR_CURRENT_TEMPERATURE
+    from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
+
+    status = _status(
+        **{PhilipsApi.NEW2_POWER: 1, PhilipsApi.NEW2_TARGET_TEMP: 22, PhilipsApi.TEMPERATURE: 19}
+    )
+    entities, _ = await _setup(hass, make_runtime, climate, "CX3120", status)
+    heater = entities[0]
+    heater.hass = hass
+    # Read the names the running HA expects (native_* from 2026.11).
+    prefix = "native_" if climate._HAS_NATIVE else ""
+    assert getattr(heater, f"{prefix}temperature_unit") == UnitOfTemperature.CELSIUS
+    assert getattr(heater, f"{prefix}current_temperature") == 19
+    assert getattr(heater, f"{prefix}target_temperature") == 22
+    assert heater.state_attributes[ATTR_CURRENT_TEMPERATURE] == 19
+    assert heater.state_attributes[ATTR_TEMPERATURE] == 22
+
+
 async def test_climate_heating_action(hass: HomeAssistant, make_runtime) -> None:
     """A CX heater collects its heating-action key and reports hvac_action."""
     from homeassistant.components.climate import HVACAction

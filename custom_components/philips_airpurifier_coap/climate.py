@@ -112,11 +112,15 @@ async def async_setup_entry(
     )
 
 
+# HA 2026.11 renamed the temperature API to native_* names; keep older HA working.
+_HAS_NATIVE = hasattr(ClimateEntity, "native_temperature_unit")
+
+
 class PhilipsHeater(PhilipsGenericControlBase, ClimateEntity):
     """Define a Philips AirPurifier fan heater."""
 
     entity_description: PhilipsHeaterEntityDescription
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.AUTO, HVACMode.FAN_ONLY]
 
     def __init__(
@@ -132,7 +136,6 @@ class PhilipsHeater(PhilipsGenericControlBase, ClimateEntity):
         """Initialize the fan heater."""
         super().__init__(hass, config, config_entry_data)
         self.entity_description = description
-        latest_status = config_entry_data.latest_status or {}
 
         model = config_entry_data.device_information.model
         device_id = config_entry_data.device_information.device_id
@@ -148,8 +151,6 @@ class PhilipsHeater(PhilipsGenericControlBase, ClimateEntity):
         self._attr_min_temp = description.min_temperature
         self._attr_max_temp = description.max_temperature
         self._attr_target_temperature_step = description.step
-        self._attr_target_temperature = latest_status.get(self._temperature_target_key)
-        self._attr_current_temperature = latest_status.get(self._current_temperature_key)
 
         self._attr_supported_features = (
             ClimateEntityFeature.TARGET_TEMPERATURE
@@ -169,14 +170,28 @@ class PhilipsHeater(PhilipsGenericControlBase, ClimateEntity):
         self._heating_action_key = heating_action_key
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         """Return the target temperature."""
         return self._device_status.get(self._temperature_target_key)
 
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         """Return the current temperature."""
         return self._device_status.get(self._current_temperature_key)
+
+    if not _HAS_NATIVE:  # pragma: no branch - one side per HA version
+        # Pre-2026.11 HA only knows the legacy names.
+        _attr_temperature_unit = UnitOfTemperature.CELSIUS
+
+        @property
+        def target_temperature(self) -> float | None:
+            """Return the target temperature (HA < 2026.11)."""
+            return self.native_target_temperature
+
+        @property
+        def current_temperature(self) -> float | None:
+            """Return the current temperature (HA < 2026.11)."""
+            return self.native_current_temperature
 
     @property
     def hvac_action(self) -> HVACAction | None:
