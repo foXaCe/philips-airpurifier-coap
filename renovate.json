@@ -22,8 +22,10 @@
   "pre-commit": {
     "enabled": true
   },
-  "dependencyDashboardTitle": "📦 Renovate Dependency Dashboard",
-  "dependencyDashboardLabels": ["dependencies", "dashboard"],
+  "dependencyDashboard": {
+    "title": "📦 Renovate Dependency Dashboard",
+    "labels": ["dependencies", "dashboard"]
+  },
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["before 6am on monday"],
